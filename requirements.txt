@@ -1,0 +1,39 @@
+# --- Core data handling ---
+pandas>=2.2
+numpy>=1.26
+pyarrow>=15.0          # optional: parquet for Silver layer (falls back to CSV if absent)
+openpyxl>=3.1          # .xlsx source files
+requests>=2.31
+
+# --- Warehouse (Gold layer) ---
+duckdb>=0.10            # optional richer local warehouse; sqlite3 (stdlib) is the default
+sqlalchemy>=2.0
+psycopg2-binary>=2.9    # only needed if WAREHOUSE_BACKEND=postgres
+
+# --- ML ---
+scikit-learn>=1.4
+prophet>=1.1             # optional: forecast_baseline.py falls back to a
+                          # self-contained seasonal-trend model if absent
+statsmodels>=0.14         # optional, for future ARIMA-based baselines
+shap>=0.45                # optional: explain.py falls back to a z-score
+                          # deviation ranking for local explanations if absent
+mlflow>=2.10               # optional: tracking.py falls back to a JSONL run
+                          # logger (artifacts/tracking/runs.jsonl) if absent
+
+# --- EDA ---
+matplotlib>=3.8
+seaborn>=0.13
+
+# --- Serving ---
+fastapi>=0.110
+uvicorn>=0.29
+streamlit>=1.32
+plotly>=5.20
+
+# --- Orchestration (lightweight; no Airflow install required for dev) ---
+schedule>=1.2
+
+# --- Dev / testing ---
+pytest>=8.0
+pytest-cov>=4.1
+python-dotenv>=1.0
