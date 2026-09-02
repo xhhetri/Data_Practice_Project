@@ -14,7 +14,9 @@ Sources (9) → Ingestion → Bronze (raw) → Silver (cleaned) → Gold (star s
 This repo covers **feature implementation only** (Epics 1–6 of the project plan):
 setup, ingestion, storage, transformation, warehouse, ML, and dashboard. Formal
 integration/UAT/security sign-off and the written assessment report are tracked
-separately — see [Known Gaps & Next Steps](#known-gaps--next-steps).
+separately — see [Known Gaps & Next Steps](#known-gaps--next-steps). For how
+the team should branch, commit, and merge going forward, see
+[Git Workflow](#git-workflow).
 
 ## Quick start
 
@@ -226,3 +228,97 @@ pytest --cov=src -q     # with coverage
 
 Each phase (ingest / transform / storage / models / dashboard) has its own
 test module under `tests/`, written alongside the corresponding feature.
+
+## Git Workflow
+
+**Model: GitHub Flow** — one protected `main` + short-lived feature branches.
+Full GitFlow (`main`/`develop`/`release`/`hotfix`) is overkill for a 6-week,
+5-person project with no versioned production releases; GitHub Flow gives the
+same branch/PR/review evidence with far less overhead.
+
+```
+main ──●────────●────────●────────●────────●──── (always working, protected)
+        \        \        \        \        \
+         feature/ feature/ feature/ feature/ feature/
+         ingest-  silver-  gold-    ml-      dashboard-
+         petrol   dedup    schema   isoforest filters
+         ●──●──●  ●──●     ●──●──●  ●──●──●   ●──●
+              ↑ PR + review + squash-merge, then delete branch
+```
+
+### Branch naming
+
+`<type>/<epic-slug>-<task-slug>`, mapped to the Jira epics above:
+
+| Type | When | Example |
+|---|---|---|
+| `feature/` | New functionality | `feature/ingest-nsw-traffic-connector` |
+| `fix/` | Bug fix | `fix/silver-null-state-codes` |
+| `test/` | Tests-only change | `test/gold-reconciliation-checks` |
+| `docs/` | README/docs only | `docs/readme-quickstart` |
+| `chore/` | Tooling, config, deps | `chore/add-shap-dependency` |
+| `refactor/` | No behaviour change | `refactor/extract-time-key-builder` |
+
+### `main` branch protection
+
+- Require a pull request before merging — no direct pushes, including from
+  the project lead
+- Require at least 1 approving review
+- Require status checks (`pytest`) to pass once CI is added
+- Require branches to be up to date before merging
+- No force-pushes to `main`
+
+### Commit messages — Conventional Commits
+
+`<type>(<scope>): <what changed>`, scope = the layer touched (`ingest`,
+`silver`, `gold`, `models`, `dashboard`):
+
+```
+feat(ingest): add NSW traffic volume connector
+fix(silver): handle null state codes in entity resolution
+test(models): add synthetic anomaly injection edge case
+docs(readme): document experiment tracking fallback
+chore(deps): add shap and mlflow to requirements.txt
+```
+
+### PR workflow
+
+1. `git checkout main && git pull`
+2. `git checkout -b feature/<epic>-<task>`
+3. Commit in small chunks as you go, not one batched commit per epic
+4. Push early, open a **draft PR** immediately for visibility
+5. Mark ready for review once tests pass locally
+6. Review from the person on the *adjacent* layer (e.g. the ML engineer
+   reviews the Data Modeller's Silver→Gold PR — that's the actual dependency)
+7. **Squash-merge** into `main` — keeps history as one clean commit per
+   feature rather than a stream of "wip" commits
+8. Delete the branch
+
+### Merge order
+
+Layers are dependent (Silver needs Bronze, Gold needs Silver, ML needs
+Gold), so **merge to `main` in dependency order**, not whoever finishes
+first. If a downstream branch (e.g. ML) was based on an older upstream
+schema (e.g. Gold) that has since changed on `main`, rebase the downstream
+branch onto `main` after the upstream merge, rather than resolving the same
+conflict twice.
+
+### Release tags
+
+Tag `main` at each Sprint Overview milestone so the tag list doubles as
+progress evidence:
+
+```bash
+git tag -a v0.1-bronze -m "Ingestion complete: all 9 sources landing in Bronze"
+git tag -a v0.2-silver -m "Silver layer: validation, harmonisation, dedup"
+git tag -a v0.3-gold -m "Gold warehouse: star schema + reconciliation"
+git tag -a v0.4-ml -m "ML: anomaly detection, forecasting, explainability"
+git tag -a v0.5-dashboard -m "Dashboard: filters, trends, alerts"
+git tag -a v1.0 -m "Final: feature-complete, tested, ready for report"
+git push --tags
+```
+
+> **Note on this repo's own history:** the current commits on `main` were
+> made directly (one per phase) while this was built solo in a single
+> session, not through the feature-branch/PR flow above. Adopt the flow
+> above going forward for all new work.
