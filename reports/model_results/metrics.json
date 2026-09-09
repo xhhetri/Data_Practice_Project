@@ -1,0 +1,26 @@
+{
+  "emissions_regression": {
+    "linear_regression": {
+      "cv_r2": -0.1977,
+      "cv_mae_kt_co2e": 6278.81
+    },
+    "random_forest": {
+      "cv_r2": -0.2885,
+      "cv_mae_kt_co2e": 6431.13,
+      "feature_importance": {
+        "fuel_consumption_ml": 0.253,
+        "vkt_road_million_km": 0.2951,
+        "registered_vehicles": 0.4519
+      }
+    },
+    "_caveat": "n=48, synthetic fixture data. Cross-validated but not validated against live government data. See module docstring."
+  },
+  "fuel_forecast_NSW": {
+    "state": "NSW",
+    "method": "holt_winters",
+    "test_months": 6,
+    "mae_ml": 355.59,
+    "mape_pct": 187.45,
+    "_caveat": "Synthetic fixture data -- see module docstring."
+  }
+}
