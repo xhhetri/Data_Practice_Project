@@ -23,12 +23,52 @@
     "mape_pct": 3.84,
     "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
   },
-  "nsw_traffic_forecast": {
-    "station": "NSW-STN-001",
+  "fuel_forecast_NT": {
+    "state": "NT",
     "method": "holt_winters",
-    "test_hours": 24,
-    "mae_vehicles": 38.26,
-    "mape_pct": 22.64,
+    "test_months": 6,
+    "mae_ml": 7.97,
+    "mape_pct": 12.92,
+    "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
+  },
+  "fuel_forecast_QLD": {
+    "state": "QLD",
+    "method": "holt_winters",
+    "test_months": 6,
+    "mae_ml": 53.0,
+    "mape_pct": 5.67,
+    "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
+  },
+  "fuel_forecast_SA": {
+    "state": "SA",
+    "method": "holt_winters",
+    "test_months": 6,
+    "mae_ml": 11.42,
+    "mape_pct": 4.53,
+    "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
+  },
+  "fuel_forecast_TAS": {
+    "state": "TAS",
+    "method": "holt_winters",
+    "test_months": 6,
+    "mae_ml": 3.83,
+    "mape_pct": 4.71,
+    "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
+  },
+  "fuel_forecast_VIC": {
+    "state": "VIC",
+    "method": "holt_winters",
+    "test_months": 6,
+    "mae_ml": 27.84,
+    "mape_pct": 3.45,
+    "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
+  },
+  "fuel_forecast_WA": {
+    "state": "WA",
+    "method": "holt_winters",
+    "test_months": 6,
+    "mae_ml": 22.43,
+    "mape_pct": 2.71,
     "_caveat": "Whether this reflects real or synthetic fixture data depends on this run's sources -- check the 'Using real data' / 'Using sample data' / 'Falling back to fixture' log lines clean.py printed during Step 1 of this pipeline run before citing this number."
   }
 }

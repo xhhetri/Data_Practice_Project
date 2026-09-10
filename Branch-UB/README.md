@@ -145,7 +145,10 @@ feature importances.
 **`forecast_fuel_consumption(state, test_months)`** — Holt-Winters
 exponential smoothing with a seasonal-naive fallback if `statsmodels`
 fails (happened on one teammate's environment — a real `statsmodels`
-bug, fixed by upgrading to ≥0.15.0, see `requirements.txt`).
+bug, fixed by upgrading to ≥0.15.0, see `requirements.txt`). `run()`
+calls this once per state (all 7), not just one — results land in
+`metrics.json` as `fuel_forecast_NSW`, `fuel_forecast_VIC`, etc., and
+each gets its own chart (`reports/figures/06_forecast_<STATE>.png`).
 
 > Every model result's `_caveat` field is generated at runtime, not
 > hardcoded — check that run's "Using real data" / "Using sample data"

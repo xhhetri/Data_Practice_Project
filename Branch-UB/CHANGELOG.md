@@ -303,3 +303,33 @@ indefinitely as pending.
   "nga_odata", and "nsw_traffic" across `.py`/`.md` files after the
   changes; remaining "road" mentions are accurate descriptions of
   road-specific inputs (fuel, VKT), not the project's overall scope.
+
+## [Unreleased] - 2026-09-10 (all-states forecast)
+
+### Fixed — fuel forecast and its EDA chart only covered NSW, despite having all 7 states' data
+
+`model.py: run()` called `forecast_fuel_consumption("NSW")` once,
+hardcoded to one state, even though `monthly_fuel_series.csv` has real
+data for all 7 states in scope. Same issue in
+`eda.py: plot_monthly_fuel_series()`, which only plotted NSW by default.
+This was a scope choice made when the function was first written (one
+example state to prove the method worked), not a data limitation --
+worth being clear about, since the data was never the constraint.
+
+**Changed:**
+
+- `model.py: run()` now loops over every state present in
+  `monthly_fuel_series.csv` and forecasts each one. Results land in
+  `metrics.json` under `fuel_forecast_<STATE>` per state; each gets its
+  own chart, `reports/figures/06_forecast_<STATE>.png`.
+- `eda.py: plot_monthly_fuel_series()` rewritten from a single-state
+  line chart to a 7-panel small-multiples grid, one panel per state,
+  independent y-axis scales per panel (NT and TAS's volumes are roughly
+  15x smaller than NSW/VIC's -- a shared scale would flatten them to an
+  invisible line).
+
+**Verified:** all 7 states forecast successfully, MAPE ranging 2.7%
+(WA) to 12.9% (NT, the smallest and most volatile state by volume) --
+sensible variation, not a bug. Every state's monthly chart shows the
+same COVID-era dip around early 2020, which is exactly the kind of
+cross-state consistency that's reassuring to see in genuinely real data.

@@ -123,16 +123,28 @@ def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
     log.info("Saved %s", out)
 
 
-def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame, state: str = "NSW") -> None:
-    """Monthly fuel consumption for one state -- the forecasting target."""
-    sub = monthly_fuel[monthly_fuel["state"] == state].sort_values("date")
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(sub["date"], sub["consumption_ml"])
-    ax.set_title(f"Monthly petroleum consumption -- {state}")
-    ax.set_xlabel("Month")
-    ax.set_ylabel("Consumption (ML)")
+def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame) -> None:
+    """Monthly fuel consumption, one panel per state -- the forecasting
+    target. Independent y-axis scales per panel (not shared) since fuel
+    volumes differ by an order of magnitude between the largest states
+    (NSW, VIC) and the smallest (NT, TAS) -- a shared scale would flatten
+    the smaller states to an invisible line."""
+    states = sorted(monthly_fuel["state"].unique())
+    n = len(states)
+    ncols = 2
+    nrows = -(-n // ncols)  # ceiling division
+    fig, axes = plt.subplots(nrows, ncols, figsize=(11, 2.6 * nrows))
+    axes = axes.flat
+    for ax, state in zip(axes, states):
+        sub = monthly_fuel[monthly_fuel["state"] == state].sort_values("date")
+        ax.plot(sub["date"], sub["consumption_ml"])
+        ax.set_title(state, fontsize=10)
+        ax.set_ylabel("ML")
+    for ax in axes[n:]:
+        ax.axis("off")  # hide any unused grid cells (7 states, 8 grid slots)
+    fig.suptitle("Monthly petroleum consumption by state")
     fig.tight_layout()
-    out = FIGURES_DIR / f"04_monthly_fuel_{state}.png"
+    out = FIGURES_DIR / "04_monthly_fuel_by_state.png"
     fig.savefig(out, dpi=150)
     plt.close(fig)
     log.info("Saved %s", out)
@@ -168,7 +180,7 @@ def run() -> None:
     plot_distributions(annual)
     plot_state_trends(annual)
     plot_correlation_heatmap(annual)
-    plot_monthly_fuel_series(monthly_fuel, state="NSW")
+    plot_monthly_fuel_series(monthly_fuel)
     plot_per_capita(annual_pop)
 
     log.info("EDA complete -- figures in %s", FIGURES_DIR)

@@ -191,8 +191,14 @@ def run() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     all_results = {
         "emissions_regression": train_emissions_regression(),
-        "fuel_forecast_NSW": forecast_fuel_consumption("NSW"),
     }
+
+    _ensure_processed()
+    monthly = pd.read_csv(PROCESSED_DIR / "monthly_fuel_series.csv")
+    states = sorted(monthly["state"].unique())
+    log.info("Forecasting fuel consumption for all %d states: %s", len(states), states)
+    for state in states:
+        all_results[f"fuel_forecast_{state}"] = forecast_fuel_consumption(state)
 
     with open(RESULTS_DIR / "metrics.json", "w") as f:
         json.dump(all_results, f, indent=2)
