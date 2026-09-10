@@ -67,8 +67,6 @@ BRONZE_FOLDER_ALIASES: dict[str, list[str]] = {
         "abs_population",
         "National, state and territory population",
     ],
-    "nga_odata_api": ["nga_odata_api"],
-    "nsw_traffic_counts": ["nsw_traffic_counts"],
 }
 
 
@@ -400,7 +398,7 @@ def load_nga_factors() -> pd.DataFrame:
     combined Scope 1 factor (kg CO2-e/GJ) / 1000 -- the two-step real
     calculation, not a single looked-up number.
     (Table 8, stationary energy factors, exists in the same workbook but
-    isn't used -- not relevant to a road transport model.)
+    isn't used -- not relevant to a transport emissions model.)
     Fixture fallback: flat fuel_type,factor_kg_co2e_per_l CSV.
     """
     path = _locate("nga_factors_2025")
@@ -424,47 +422,6 @@ def load_nga_factors() -> pd.DataFrame:
 
     df["factor_kg_co2e_per_l"] = pd.to_numeric(df["factor_kg_co2e_per_l"], errors="coerce")
     return df.dropna(subset=["factor_kg_co2e_per_l"])
-
-
-def load_nga_odata_api() -> pd.DataFrame:
-    """
-    The OData API returns the same underlying GHG inventory as
-    state_territory_ghg, but via a different extraction path. No real
-    pull has been wired in yet (fixture only) -- see validate.py:
-    validate_ghg_cross_source() for how this is used once it is.
-    """
-    import json
-
-    path = _locate("nga_odata_api", exts=("json",))
-    with open(path) as f:
-        raw = json.load(f)
-
-    df = pd.DataFrame(raw["value"])
-    df = df.rename(columns={
-        "State": "state",
-        "Year": "year",
-        "Sector": "sector",
-        "EmissionsKtCO2e": "ghg_kt_co2e_odata",
-    })
-    df = _standardise_state(df)
-    df["ghg_kt_co2e_odata"] = pd.to_numeric(df["ghg_kt_co2e_odata"], errors="coerce")
-    return df.dropna(subset=["ghg_kt_co2e_odata"])
-
-
-def load_nsw_traffic_counts() -> pd.DataFrame:
-    """
-    Hourly vehicle counts per station, NSW only. No real pull wired in
-    yet (fixture only). Different grain entirely from every other source
-    (station x hour, not state x year), so not merged into the annual
-    master tables even once real data is added -- see eda.py/model.py.
-    """
-    df = pd.read_csv(_locate("nsw_traffic_counts"))
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
-    df["vehicle_count"] = pd.to_numeric(df["vehicle_count"], errors="coerce")
-    df = df.dropna(subset=["vehicle_count"])
-    df["hour"] = df["timestamp"].dt.hour
-    df["day_of_week"] = df["timestamp"].dt.day_name()
-    return df
 
 
 # ---------------------------------------------------------------------
@@ -578,11 +535,6 @@ def build_monthly_fuel_series() -> pd.DataFrame:
     return monthly
 
 
-def build_nsw_traffic_hourly() -> pd.DataFrame:
-    """Cleaned hourly NSW traffic counts -- see load_nsw_traffic_counts()."""
-    return load_nsw_traffic_counts()
-
-
 def run() -> None:
     """Build all processed tables and write them to data/processed/."""
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
@@ -595,9 +547,6 @@ def run() -> None:
 
     monthly_fuel = build_monthly_fuel_series()
     monthly_fuel.to_csv(PROCESSED_DIR / "monthly_fuel_series.csv", index=False)
-
-    nsw_traffic = build_nsw_traffic_hourly()
-    nsw_traffic.to_csv(PROCESSED_DIR / "nsw_traffic_hourly.csv", index=False)
 
     log.info("Processed tables written to %s", PROCESSED_DIR)
 

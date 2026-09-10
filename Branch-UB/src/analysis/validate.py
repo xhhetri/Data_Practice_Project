@@ -1,29 +1,27 @@
 """
 validate.py
 ------------
-Two independent data-quality checks that use the two sources loaded but
-never consumed by clean.py's master tables: nga_factors_2025 and
-nga_odata_api.
+One data-quality check that uses a source loaded but never consumed by
+clean.py's master tables: nga_factors_2025.
 
-1. validate_emission_factors() -- checks whether reported road transport
-   emissions are consistent with (fuel consumed x published emission
-   factor). This is the accounting identity referenced throughout this
-   project's docs: real emissions inventories are *constructed* this way,
-   so on real data this should match closely. A large, systematic gap
-   would mean either a units error in this pipeline, or that road
-   transport emissions include fuel types/sources not captured in
-   petroleum_statistics (e.g. LPG, biodiesel blending) -- both worth
-   knowing before citing the regression in model.py.
+validate_emission_factors() -- checks whether reported transport-sector
+emissions are consistent with (fuel consumed x published emission
+factor). This is the accounting identity referenced throughout this
+project's docs: real emissions inventories are *constructed* this way,
+so on real data this should match reasonably closely. A gap far outside
+the expected range would mean either a units error in this pipeline, or
+that transport emissions include fuel types/sources not captured in
+petroleum_statistics (e.g. LPG, biodiesel blending) -- both worth
+knowing before citing the regression in model.py.
 
-2. validate_ghg_cross_source() -- compares the published inventory table
-   (state_territory_ghg.csv) against the same inventory pulled via the
-   OData API (nga_odata_api.json). These should be near-identical since
-   they're meant to be the same underlying data via two extraction
-   paths; a mismatch flags a data pipeline bug or a vintage/version
-   mismatch between the two pulls.
+This is a diagnostic report, not a model -- it writes a CSV + a plot to
+reports/validation/, and logs a plain-English summary.
 
-Both are diagnostic reports, not models -- they write CSVs + a plot to
-reports/validation/, and log a plain-English summary.
+(A second check, validate_ghg_cross_source(), previously compared this
+project's CSV-sourced emissions against a National Greenhouse Accounts
+OData API pull. That data source has been descoped -- see CHANGELOG.md
+-- and the check removed along with it, rather than left as a
+half-working reference to a source no longer in scope.)
 """
 
 from __future__ import annotations
@@ -39,7 +37,6 @@ from src.analysis.clean import (
     PROCESSED_DIR,
     REPO_ROOT,
     load_nga_factors,
-    load_nga_odata_api,
     load_petroleum_statistics,
     load_state_territory_ghg,
 )
@@ -117,10 +114,10 @@ def validate_emission_factors() -> pd.DataFrame:
         "below reported whole-transport-sector emissions on average "
         "(n=%d state-years). This is expected, not necessarily an error -- "
         "see this function's docstring: reported figures include rail, "
-        "aviation and shipping that this road-only calculation doesn't "
-        "cover. A gap outside roughly 10-20%% is worth investigating "
-        "further; within that range is consistent with road's typical "
-        "share of transport-sector fuel use.",
+        "aviation and shipping that this road-fuel-only calculation "
+        "doesn't cover. A gap outside roughly 10-20%% is worth "
+        "investigating further; within that range is consistent with "
+        "road's typical share of transport-sector fuel use.",
         mean_pct, len(comparison),
     )
 
@@ -128,9 +125,9 @@ def validate_emission_factors() -> pd.DataFrame:
     ax.scatter(comparison["ghg_kt_co2e"], comparison["implied_kt_co2e"])
     lims = [0, max(comparison["ghg_kt_co2e"].max(), comparison["implied_kt_co2e"].max()) * 1.05]
     ax.plot(lims, lims, linestyle="--", color="gray", label="perfect agreement")
-    ax.set_xlabel("Reported emissions (kt CO2-e)")
-    ax.set_ylabel("Implied emissions: fuel x factor (kt CO2-e)")
-    ax.set_title("Emission factor validation (fixture data)")
+    ax.set_xlabel("Reported transport-sector emissions (kt CO2-e)")
+    ax.set_ylabel("Implied road-fuel emissions: fuel x factor (kt CO2-e)")
+    ax.set_title(f"Emission factor validation (n={len(comparison)})")
     ax.legend()
     fig.tight_layout()
     fig.savefig(VALIDATION_DIR / "emission_factor_check.png", dpi=150)
@@ -139,54 +136,8 @@ def validate_emission_factors() -> pd.DataFrame:
     return comparison
 
 
-def validate_ghg_cross_source() -> pd.DataFrame:
-    """
-    Compare the CSV inventory table against the OData API extract.
-
-    CURRENT LIMITATION: state_territory_ghg is real data (1989-2023);
-    nga_odata_api has no real pull wired in yet, so this side is still
-    the synthetic fixture. The large gap this currently reports is
-    therefore expected and uninformative -- it's comparing real data
-    against random numbers, not genuinely cross-checking two real
-    extracts of the same inventory. This check becomes meaningful once
-    a real OData pull replaces the fixture; until then, treat its
-    output as a demonstration that the check works mechanically, not as
-    a real data-quality finding (same caveat pattern as the synthetic
-    fixture note elsewhere in this project).
-    """
-    csv_source = (
-        load_state_territory_ghg()
-        .query("sector == 'Transport'")
-        .groupby(["state", "year"], as_index=False)["ghg_kt_co2e"]
-        .sum()
-    )
-    api_source = load_nga_odata_api().query("sector == 'Transport'")
-
-    comparison = csv_source.merge(api_source, on=["state", "year"], how="outer", indicator=True)
-    only_csv = (comparison["_merge"] == "left_only").sum()
-    only_api = (comparison["_merge"] == "right_only").sum()
-    both = (comparison["_merge"] == "both").sum()
-
-    comparison["abs_diff_kt"] = (
-        comparison["ghg_kt_co2e"] - comparison["ghg_kt_co2e_odata"]
-    ).abs()
-
-    VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
-    comparison.to_csv(VALIDATION_DIR / "ghg_cross_source_check.csv", index=False)
-
-    log.info(
-        "GHG cross-source check: %d state-years in both sources, "
-        "%d only in CSV table, %d only in OData API. "
-        "Mean absolute difference where both exist: %.1f kt CO2-e.",
-        both, only_csv, only_api,
-        comparison.loc[comparison["_merge"] == "both", "abs_diff_kt"].mean(),
-    )
-    return comparison
-
-
 def run() -> None:
     validate_emission_factors()
-    validate_ghg_cross_source()
     log.info("Validation reports written to %s", VALIDATION_DIR)
 
 

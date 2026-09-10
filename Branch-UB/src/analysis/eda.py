@@ -161,24 +161,6 @@ def plot_per_capita(annual_pop: pd.DataFrame) -> None:
     log.info("Saved %s", out)
 
 
-def plot_nsw_traffic_pattern(traffic: pd.DataFrame) -> None:
-    """Average hourly traffic volume across all NSW stations -- a daily
-    pattern check, distinct grain from every other figure (station x
-    hour, not state x year)."""
-    hourly_avg = traffic.groupby("hour")["vehicle_count"].mean()
-    fig, ax = plt.subplots(figsize=(9, 5))
-    ax.plot(hourly_avg.index, hourly_avg.values, marker="o")
-    ax.set_title("NSW road traffic -- average vehicle count by hour of day")
-    ax.set_xlabel("Hour of day")
-    ax.set_ylabel("Avg vehicle count (across stations)")
-    ax.set_xticks(range(0, 24, 2))
-    fig.tight_layout()
-    out = FIGURES_DIR / "07_nsw_traffic_hourly_pattern.png"
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    log.info("Saved %s", out)
-
-
 def run() -> None:
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     annual, annual_pop, monthly_fuel = _load_processed()
@@ -188,11 +170,6 @@ def run() -> None:
     plot_correlation_heatmap(annual)
     plot_monthly_fuel_series(monthly_fuel, state="NSW")
     plot_per_capita(annual_pop)
-
-    traffic_path = PROCESSED_DIR / "nsw_traffic_hourly.csv"
-    if traffic_path.exists():
-        traffic = pd.read_csv(traffic_path, parse_dates=["timestamp"])
-        plot_nsw_traffic_pattern(traffic)
 
     log.info("EDA complete -- figures in %s", FIGURES_DIR)
 

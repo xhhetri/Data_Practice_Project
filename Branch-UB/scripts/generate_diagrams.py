@@ -66,15 +66,15 @@ def draw_architecture_diagram(out_path: Path) -> None:
     ax.set_ylim(0, 12)
     ax.axis("off")
     ax.set_title(
-        "System Architecture — Road Transport Emissions Decision Support\n"
-        "(current: src/analysis/, single flat pipeline)",
+        "System Architecture — Transport Emissions Decision Support (Australia)\n"
+        "(current: src/analysis/, single flat pipeline, 7 sources)",
         fontsize=12, fontweight="bold",
     )
 
     sources = _box(ax, (0.3, 10.2), 11.4, 0.9,
-                    "9 source files (fixtures/ or real downloads)\n"
-                    "petroleum stats · GHG inventories · NGA factors · NGA OData API ·\n"
-                    "BITRE yearbook · vehicle registrations · quarterly GHG · population · NSW traffic",
+                    "7 source files (fixtures/ or real downloads)\n"
+                    "petroleum stats · GHG inventories · NGA factors ·\n"
+                    "BITRE yearbook · vehicle registrations · quarterly GHG · population",
                     COLORS["source"], fontsize=8)
 
     bronze = _box(ax, (4.2, 8.6), 3.6, 0.9,
@@ -87,23 +87,22 @@ def draw_architecture_diagram(out_path: Path) -> None:
                   COLORS["clean"])
     _arrow(ax, bronze, clean)
 
-    out1 = _box(ax, (0.3, 5.2), 2.7, 1.2, "annual_master.csv\n(n=48, main model input)", COLORS["output"], 8)
-    out2 = _box(ax, (3.2, 5.2), 2.7, 1.2, "annual_master_\nwith_population.csv\n(n=16, per-capita)", COLORS["output"], 8)
-    out3 = _box(ax, (6.1, 5.2), 2.7, 1.2, "monthly_fuel_\nseries.csv\n(forecast input)", COLORS["output"], 8)
-    out4 = _box(ax, (9.0, 5.2), 2.7, 1.2, "nsw_traffic_\nhourly.csv", COLORS["output"], 8)
-    for o in (out1, out2, out3, out4):
+    out1 = _box(ax, (1.0, 5.2), 3.3, 1.2, "annual_master.csv\n(main model input)", COLORS["output"], 8)
+    out2 = _box(ax, (4.5, 5.2), 3.3, 1.2, "annual_master_\nwith_population.csv\n(per-capita)", COLORS["output"], 8)
+    out3 = _box(ax, (8.0, 5.2), 3.3, 1.2, "monthly_fuel_\nseries.csv\n(forecast input)", COLORS["output"], 8)
+    for o in (out1, out2, out3):
         _arrow(ax, clean, o)
 
-    eda = _box(ax, (0.3, 2.8), 3.4, 1.3,
-                "src/analysis/eda.py\n-> reports/figures/*.png\n(8 figures)", COLORS["consumer"], 8)
-    model = _box(ax, (4.3, 2.8), 3.4, 1.3,
-                  "src/analysis/model.py\n-> reports/model_results/\n(regression + 2 forecasts)", COLORS["consumer"], 8)
-    validate = _box(ax, (8.3, 2.8), 3.4, 1.3,
-                     "src/analysis/validate.py\n-> reports/validation/\n(fuel×factor + cross-source checks)",
+    eda = _box(ax, (0.3, 2.8), 3.7, 1.3,
+                "src/analysis/eda.py\n-> reports/figures/*.png\n(7 figures)", COLORS["consumer"], 8)
+    model = _box(ax, (4.3, 2.8), 3.7, 1.3,
+                  "src/analysis/model.py\n-> reports/model_results/\n(regression + fuel forecast)", COLORS["consumer"], 8)
+    validate = _box(ax, (8.3, 2.8), 3.3, 1.3,
+                     "src/analysis/validate.py\n-> reports/validation/\n(fuel x factor check)",
                      COLORS["consumer"], 8)
     for o in (out1, out2):
         _arrow(ax, o, eda, start_side="bottom", end_side="top")
-    for o in (out1, out3, out4):
+    for o in (out1, out3):
         _arrow(ax, o, model, start_side="bottom", end_side="top")
     _arrow(ax, out1, validate, start_side="bottom", end_side="top")
 
@@ -159,5 +158,9 @@ if __name__ == "__main__":
     arch_dir.mkdir(parents=True, exist_ok=True)
     workflow_dir.mkdir(parents=True, exist_ok=True)
 
-    draw_architecture_diagram(arch_dir / "architecture_v2.png")
-    draw_workflow_diagram(workflow_dir / "workflow_v2.png")
+    # v3: scoped to "Transport Emissions" (was "Road Transport Emissions"),
+    # 7 sources (was 9) after descoping the OData API and NSW traffic
+    # sources -- see CHANGELOG.md. v2 kept in docs/ as historical record,
+    # not deleted -- see README's diagram-versioning convention.
+    draw_architecture_diagram(arch_dir / "architecture_v3.png")
+    draw_workflow_diagram(workflow_dir / "workflow_v3.png")

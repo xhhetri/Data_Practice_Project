@@ -51,8 +51,6 @@ def test_standardise_state_keeps_all_valid_codes():
     "load_state_territory_ghg",
     "load_vehicle_registrations",
     "load_nga_factors",
-    "load_nga_odata_api",
-    "load_nsw_traffic_counts",
 ])
 def test_loader_returns_nonempty_dataframe(loader_name):
     loader = getattr(clean, loader_name)
@@ -64,13 +62,6 @@ def test_loader_returns_nonempty_dataframe(loader_name):
 def test_petroleum_statistics_date_column_is_datetime():
     df = clean.load_petroleum_statistics()
     assert pd.api.types.is_datetime64_any_dtype(df["date"])
-
-
-def test_nsw_traffic_counts_has_hour_and_day_of_week():
-    df = clean.load_nsw_traffic_counts()
-    assert "hour" in df.columns
-    assert df["hour"].between(0, 23).all()
-    assert "day_of_week" in df.columns
 
 
 # ---------------------------------------------------------------------
@@ -124,14 +115,6 @@ def test_monthly_fuel_series_shape():
     # monthly grain: no state should have more than one row per calendar date
     dupes = df.duplicated(subset=["state", "date"]).sum()
     assert dupes == 0, f"{dupes} duplicate (state, date) rows -- aggregation bug"
-
-
-def test_nsw_traffic_hourly_only_contains_nsw():
-    df = clean.build_nsw_traffic_hourly()
-    # Source file only has NSW stations, but assert it explicitly --
-    # a regression here would mean the wrong fixture got loaded.
-    assert "station_id" in df.columns
-    assert df["station_id"].str.startswith("NSW-").all()
 
 
 # ---------------------------------------------------------------------

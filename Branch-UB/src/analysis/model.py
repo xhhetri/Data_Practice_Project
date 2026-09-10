@@ -1,7 +1,7 @@
 """
 model.py
 --------
-Three models, matching the project's Theme 2 (Predictive Analytics and
+Two models, matching the project's Theme 2 (Predictive Analytics and
 Forecasting) brief:
 
 1. train_emissions_regression() -- regression predicting annual state
@@ -15,9 +15,6 @@ Forecasting) brief:
    monthly petroleum consumption for a given state. Uses the full
    monthly series (far more points than the annual table), so this is
    the model worth trusting most once real data is loaded.
-
-3. forecast_nsw_traffic() -- same forecasting method, applied to hourly
-   NSW traffic volume instead of monthly fuel sales.
 
 CAVEAT, stated once here rather than scattered as comments: whether
 these results mean anything depends entirely on whether real or
@@ -190,83 +187,12 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
     return result
 
 
-def forecast_nsw_traffic(station: str = "NSW-STN-001", test_hours: int = 24) -> dict:
-    """
-    Hourly traffic volume forecast for one station, 24-hour seasonality.
-    Different data shape from forecast_fuel_consumption (hourly not
-    monthly, single-state not multi-state) but same method, for
-    consistency and to reuse the same fallback logic.
-    """
-    _ensure_processed()
-    df = pd.read_csv(PROCESSED_DIR / "nsw_traffic_hourly.csv", parse_dates=["timestamp"])
-    series = (
-        df[df["station_id"] == station]
-        .sort_values("timestamp")
-        .set_index("timestamp")["vehicle_count"]
-    )
-
-    if len(series) < test_hours + 48:
-        log.warning(
-            "Only %d hours of data for %s -- forecast may be unreliable",
-            len(series), station,
-        )
-
-    train, test = series.iloc[:-test_hours], series.iloc[-test_hours:]
-
-    try:
-        from statsmodels.tsa.holtwinters import ExponentialSmoothing
-        model = ExponentialSmoothing(
-            train, trend="add", seasonal="add", seasonal_periods=24
-        ).fit()
-        forecast = model.forecast(test_hours)
-        method = "holt_winters"
-    except Exception as e:
-        log.warning("statsmodels forecast failed (%s) -- using seasonal-naive fallback", e)
-        forecast = train.iloc[-24:-24 + test_hours]
-        forecast.index = test.index
-        method = "seasonal_naive_fallback"
-
-    mae = mean_absolute_error(test, forecast)
-    mape = float(np.mean(np.abs((test - forecast.values) / test.replace(0, np.nan))) * 100)
-
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(train.index[-72:], train.values[-72:], label="train (last 72h)")
-    ax.plot(test.index, test.values, label="actual", marker="o")
-    ax.plot(test.index, forecast.values, label="forecast", marker="x", linestyle="--")
-    ax.set_title(f"Hourly traffic forecast -- {station} ({method})")
-    ax.set_ylabel("Vehicle count")
-    ax.legend()
-    fig.tight_layout()
-    fig.savefig(REPO_ROOT / "reports" / "figures" / f"08_traffic_forecast_{station}.png", dpi=150)
-    plt.close(fig)
-
-    result = {
-        "station": station,
-        "method": method,
-        "test_hours": test_hours,
-        "mae_vehicles": round(mae, 2),
-        "mape_pct": round(mape, 2),
-        "_caveat": _data_source_caveat(),
-    }
-    log.info("Traffic forecast (%s, %s): MAE=%.1f vehicles, MAPE=%.1f%%",
-              station, method, mae, mape)
-    return result
-
-
 def run() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     all_results = {
         "emissions_regression": train_emissions_regression(),
         "fuel_forecast_NSW": forecast_fuel_consumption("NSW"),
     }
-
-    traffic_path = PROCESSED_DIR / "nsw_traffic_hourly.csv"
-    if traffic_path.exists():
-        all_results["nsw_traffic_forecast"] = forecast_nsw_traffic()
 
     with open(RESULTS_DIR / "metrics.json", "w") as f:
         json.dump(all_results, f, indent=2)
