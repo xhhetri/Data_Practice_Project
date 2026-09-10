@@ -1,4 +1,4 @@
-# AI-Powered Decision Support System — Road Transport Emissions (Australia)
+# AI-Powered Decision Support System —  Transport Emissions (Australia)
 
 Predictive analytics on Australian road transport emissions, built from
 nine public government datasets: cleaning, EDA, and forecasting/regression
