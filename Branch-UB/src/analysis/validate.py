@@ -55,12 +55,29 @@ def validate_emission_factors() -> pd.DataFrame:
     implied_kt_co2e = annual fuel consumption (ML) x factor (kg CO2e / L)
     -- the ML->L and kg->kt conversions cancel exactly (both 1e6), so no
     extra scaling constant is needed. Compared against the reported
-    road transport emissions for the same state/year.
+    state Transport-sector emissions for the same state/financial-year.
+
+    Uses fuel's fy_year (not its calendar 'year') to match
+    state_territory_ghg's financial-year convention -- see
+    clean.py's _fy_start_from_date(). Grouping by calendar year here
+    would silently misalign roughly half of each year's transactions
+    against the wrong financial year.
+
+    A gap between implied and reported is EXPECTED, not necessarily a
+    bug: state_territory_ghg's "Transport" row is the whole transport
+    sector (road + rail + domestic aviation + shipping -- see that
+    loader's docstring), while this implied figure only covers
+    road fuel (petrol + diesel). Implied should therefore run LOWER
+    than reported, roughly in proportion to road's typical ~85-90%
+    share of transport-sector fuel use nationally. A gap far outside
+    that range is worth investigating; a gap within it is exactly what
+    this methodology predicts.
     """
     fuel = (
         load_petroleum_statistics()
-        .groupby(["state", "year", "product"], as_index=False)["consumption_ml"]
+        .groupby(["state", "fy_year", "product"], as_index=False)["consumption_ml"]
         .sum()
+        .rename(columns={"fy_year": "year"})
     )
     factors = load_nga_factors().rename(columns={"fuel_type": "product"})
     fuel = fuel.merge(factors, on="product", how="left")
@@ -96,11 +113,14 @@ def validate_emission_factors() -> pd.DataFrame:
 
     mean_pct = comparison["pct_diff"].mean()
     log.info(
-        "Emission factor check: mean %% difference between implied and "
-        "reported emissions = %.1f%% (n=%d state-years). "
-        "NOTE: only 'Automotive Diesel Oil' is covered by the current "
-        "petroleum_statistics fixture -- real data should include petrol, "
-        "LPG etc. too, or this check will systematically under-count.",
+        "Emission factor check: implied road-fuel emissions run %.1f%% "
+        "below reported whole-transport-sector emissions on average "
+        "(n=%d state-years). This is expected, not necessarily an error -- "
+        "see this function's docstring: reported figures include rail, "
+        "aviation and shipping that this road-only calculation doesn't "
+        "cover. A gap outside roughly 10-20%% is worth investigating "
+        "further; within that range is consistent with road's typical "
+        "share of transport-sector fuel use.",
         mean_pct, len(comparison),
     )
 
@@ -120,7 +140,20 @@ def validate_emission_factors() -> pd.DataFrame:
 
 
 def validate_ghg_cross_source() -> pd.DataFrame:
-    """Compare the CSV inventory table against the OData API extract."""
+    """
+    Compare the CSV inventory table against the OData API extract.
+
+    CURRENT LIMITATION: state_territory_ghg is real data (1989-2023);
+    nga_odata_api has no real pull wired in yet, so this side is still
+    the synthetic fixture. The large gap this currently reports is
+    therefore expected and uninformative -- it's comparing real data
+    against random numbers, not genuinely cross-checking two real
+    extracts of the same inventory. This check becomes meaningful once
+    a real OData pull replaces the fixture; until then, treat its
+    output as a demonstration that the check works mechanically, not as
+    a real data-quality finding (same caveat pattern as the synthetic
+    fixture note elsewhere in this project).
+    """
     csv_source = (
         load_state_territory_ghg()
         .query("sector == 'Transport'")

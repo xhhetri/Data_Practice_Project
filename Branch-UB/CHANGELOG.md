@@ -1,129 +1,308 @@
-# Changelog
 
-## [Unreleased] - 2026-09-09
+# AI-Powered Decision Support System — Road Transport Emissions (Australia)
 
-### Changed — Architecture simplified: Bronze/Silver/Gold → single clean/EDA/model pipeline
+Predictive analytics on Australian road transport emissions, built from
+nine public government datasets: cleaning, EDA, and forecasting/regression
+models over a single, flat pipeline.
 
-**Previous state:** A layered "medallion" architecture (Bronze → Silver → Gold),
-with per-source ingestion connector classes (`src/ingest/*.py`), a shared
-`BaseConnector` with retry/backoff, an orchestration scheduler, a Silver
-transform layer writing Parquet, and a Gold star-schema warehouse
-(SQLite/DuckDB), feeding a separate ML layer and Streamlit dashboard.
+## Status
 
-**Current state:** A single `src/analysis/` module with three files —
-`clean.py` (load + standardise + merge the 9 sources into analysis-ready
-tables), `eda.py` (distributions, trends, correlations, all saved as
-figures), and `model.py` (regression + time-series forecast, with
-evaluation metrics). Run end-to-end with `python run_pipeline.py`.
+**Real government data is now loaded and verified working**, not just
+fixtures. 7 of 9 sources currently resolve to real downloaded files (see
+[Data sources](#data-sources)); 2 (OData API, NSW traffic) still fall
+back to fixtures — no real pull wired in yet for those.
 
-**Justification:**
-1. The connector/orchestration code for the previous architecture was lost
-   in commit `d2942ca` (ingestion connectors, Silver parquet outputs, and
-   the Gold warehouse were deleted; only `scheduler.py` remained). Rather
-   than rebuilding equivalent complexity from scratch under time pressure,
-   the team re-scoped the architecture to match what a 4-person student
-   project can realistically build, test, and maintain for the remainder
-   of the semester.
-2. The assessment rubric requires evidence of data acquisition, cleaning,
-   EDA, and predictive modelling — it does not require a layered warehouse
-   architecture. The simplified pipeline satisfies every required rubric
-   item with less surface area for things to break.
-3. A single, flat, well-documented module is easier for four people to
-   review and extend than five architectural layers, given the team's
-   size and the remaining timeline.
+**Implemented and verified end-to-end:**
 
-**What was removed:** `src/ingest/` connector classes, `BaseConnector`,
-the Silver Parquet layer, the Gold SQLite/DuckDB warehouse, the
-FastAPI scoring endpoint, and the Streamlit dashboard scaffold. None of
-these had been demonstrated working end-to-end in this repo before removal.
+- Data loading + cleaning for all 9 sources, real-file-aware
+  (`src/analysis/clean.py`)
+- Merged, analysis-ready tables (annual state-level, monthly fuel series,
+  NSW hourly traffic)
+- Exploratory data analysis — 8 figures (`src/analysis/eda.py`)
+- Three models — annual emissions regression, monthly fuel forecast, NSW
+  hourly traffic forecast (`src/analysis/model.py`)
+- Data quality validation — emission-factor cross-check and dual-source
+  GHG consistency check (`src/analysis/validate.py`)
+- 28 automated tests (`tests/test_clean.py`, run with `pytest tests/`)
+- CI on every push/PR (`.github/workflows/ci.yml`)
+- Single command to run the whole pipeline (`run_pipeline.py`)
+- Architecture and workflow diagrams (`docs/`)
 
-**What replaced it:** `src/analysis/clean.py`, `src/analysis/eda.py`,
-`src/analysis/model.py`, orchestrated by `run_pipeline.py`. Verified
-to run end-to-end from a clean checkout, producing:
-- `data/processed/` — cleaned, merged CSVs
-- `reports/figures/` — 6 EDA/forecast figures
-- `reports/model_results/metrics.json` — cross-validated regression
-  metrics + monthly fuel forecast metrics, with a trained model `.pkl`
+**Not implemented / explicitly out of scope** — see
+[CHANGELOG.md](./CHANGELOG.md):
 
-### Removed (commit `d2942ca`, prior to this entry — documented retroactively)
-- All `src/ingest/*.py` connector modules
-- `data/silver/*.parquet`
-- `data/gold/warehouse.sqlite`
+- Layered Bronze/Silver/Gold warehouse, Streamlit dashboard, FastAPI
+  endpoint — all descoped; a `src/ingest/` layer was tried, found to
+  depend on a `src/common/` module never committed anywhere in this
+  repo's history, and removed rather than rebuilt.
 
-This removal was not documented in a changelog at the time it happened.
-This entry exists to bring the project change record up to date and
-establish going-forward practice: every architecture/scope change from
-here on gets an entry here before the next assessment is submitted.
+## What running on real data actually showed
 
-## [Unreleased] - 2026-09-09 (later same day)
+The regression (fuel + VKT + vehicles → transport emissions) scores
+**CV R² ≈ 0.995** on real data. That is expected, not a triumph to
+celebrate uncritically: state emissions inventories are *constructed
+from* fuel sales via published NGA emission factors, so a near-perfect
+score here mostly reflects that accounting identity, not a novel
+predictive insight. This is exactly what was predicted before any real
+data was loaded — see the model-performance discussion in this
+project's assessment report.
 
-### Removed — legacy `src/ingest/` layer and its Silver/Gold outputs, permanently
+The **fuel forecast** is the model actually worth trusting: MAPE dropped
+from 186% (synthetic fixtures, i.e. noise) to **3.8%** on real monthly
+petroleum sales, because Holt-Winters is now fitting genuine seasonal
+structure instead of random numbers.
 
-After the above decision, `src/ingest/*.py` and the Silver/Gold artefacts
-were briefly restored via `git revert` while the team confirmed the
-decision. On inspection, the restored code turned out to be non-functional:
-every connector imports `src.common.config` and
-`src.common.logging_setup`, and **`src/common/` does not exist in this
-repository's history on any branch** — it was never committed. The
-Silver `.parquet` files and `data/gold/warehouse.sqlite` that *were*
-committed are valid, populated data (verified: correct schema, correct
-row counts against the fixtures) — but there is no working code in this
-repo that can regenerate them.
+## Quick start
 
-**Decision:** remove `src/ingest/`, `data/silver/`, and `data/gold/`
-permanently rather than reconstruct `src/common` from scratch. Rebuilding
-it would only resurrect a pipeline that produces output nothing else in
-the repo consumes — `src/analysis/` already covers acquisition (via
-`data/bronze/`), cleaning, EDA, and modelling end-to-end. Keeping
-non-runnable code in the repo actively works against the assessment's
-"reproducibility artefacts" and "execution instructions" requirements:
-anyone following the setup instructions and running the legacy path
-would hit an `ImportError` on the first import.
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 
-**Verified after removal:** `python run_pipeline.py` still runs
-end-to-end with no errors — `src/analysis/` never depended on
-`src/ingest/`, `data/silver/`, or `data/gold/` in the first place.
+pytest tests/          # 28 tests (real-file loaders included, ~2 min)
+python run_pipeline.py  # clean -> EDA -> model -> validate
+```
 
-From this point on, `src/analysis/` (via `run_pipeline.py`) is the
-single, sole data pipeline for this project.
+Outputs land in:
 
-## [Unreleased] - 2026-09-09 (hardening pass)
+| Output                   | Location                                           |
+| ------------------------ | -------------------------------------------------- |
+| Cleaned, merged tables   | `data/processed/*.csv`                           |
+| EDA figures              | `reports/figures/*.png`                          |
+| Model metrics (JSON)     | `reports/model_results/metrics.json`             |
+| Trained regression model | `reports/model_results/emissions_regression.pkl` |
+| Data quality checks      | `reports/validation/*.csv`, `*.png`            |
 
-### Added
-- Loaders for the two previously-unused sources: `load_nga_odata_api()`
-  and `load_nsw_traffic_counts()` in `clean.py`. All 9 sources now have
-  a loader (source 7, quarterly GHG update, is loaded/tested but not yet
-  consumed by a table — noted as a next step in README).
-- `src/analysis/validate.py` — two data-quality checks that were
-  previously just "future work": an emission-factor cross-check
-  (fuel × published factor vs. reported inventory) and a dual-source GHG
-  consistency check (published CSV table vs. the same data via the
-  OData API).
-- NSW hourly traffic EDA figure and a 24-hour-seasonality forecast model
-  (`forecast_nsw_traffic()`), using the same method as the existing fuel
-  forecast for consistency.
-- `tests/test_clean.py` — 22 tests: state-code standardisation, every
-  loader, exact row counts for every master table, and `_locate()`'s
-  fallback ordering (tested in isolation via `tmp_path`, not against the
-  real `data/bronze/`).
-- `.github/workflows/ci.yml` — runs the test suite and a full pipeline
-  smoke test on every push/PR to `main`, uploads generated outputs as a
-  build artifact.
-- `docs/architecture/architecture_v2.png` and
-  `docs/workflow/workflow_v2.png`, generated by
-  `scripts/generate_diagrams.py`, matching the current pipeline exactly.
+Every pipeline run logs, per source, whether it used real data, the
+sample fixture, or the bundled fixture fallback — check these lines
+before citing any number:
 
-### Changed
-- `requirements.txt` trimmed from 24 packages to the 6 actually imported
-  anywhere in `src/analysis/`, `run_pipeline.py`, or `tests/` (pandas,
-  numpy, matplotlib, scikit-learn, statsmodels, pytest) — verified by
-  grepping every import statement against the file. `openpyxl` and
-  `requests` kept as commented-out "anticipated" entries for when real
-  `.xlsx` sources and a download script are added.
-- `run_pipeline.py` now runs 4 stages (clean → EDA → model → validate),
-  was 3.
+```
+INFO: Using real data for 'petroleum_statistics': data/bronze/Australian Petroleum statistics consumption cover/...
+INFO: Falling back to fixture for 'nsw_traffic_counts': fixtures/nsw_traffic_counts.SAMPLE.csv
+```
 
-### Verified
-- Full pipeline re-run end-to-end after every change in this pass
-  (`python run_pipeline.py`, exit 0, all expected output files present).
-- All 22 tests pass (`pytest tests/`).
+## Data sources
+
+| # | Source                                                   | Loader                           | Real file in repo?                               | Used by                                                                                            |
+| - | -------------------------------------------------------- | -------------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| 1 | Australian Petroleum Statistics                          | `load_petroleum_statistics()`  | ✅`Sales by state and territory` sheet         | annual master, monthly forecast, validation                                                        |
+| 2 | State & Territory GHG Inventories (Emission Data Tables) | `load_state_territory_ghg()`   | ✅ per-state sheets, "3. Transport" row          | annual master (regression target), validation                                                      |
+| 3 | National GHG Accounts OData API                          | `load_nga_odata_api()`         | ❌ fixture only                                  | validation (cross-source check) —**currently uninformative**, see caveat in `validate.py` |
+| 4 | National GHG Accounts Factors 2025                       | `load_nga_factors()`           | ✅`Table 9` (transport fuels)                  | validation (emission-factor check)                                                                 |
+| 5 | BITRE Yearbook 2025 (VKT)                                | `load_bitre_yearbook()`        | ✅`Table 4.3`                                  | annual master                                                                                      |
+| 6 | Registered Road Vehicles                                 | `load_vehicle_registrations()` | ✅ real CSV (fleet-by-manufacture-year snapshot) | annual master (as a broadcast constant — see caveat below)                                        |
+| 7 | Quarterly GHG Update                                     | `load_quarterly_ghg_update()`  | ✅`Data Table 1A` (national only)              | loaded, not merged into any state-level table — no state dimension exists in this source          |
+| 8 | ABS Population (ERP)                                     | `load_population()`            | ✅`Data1` sheet                                | annual master with population                                                                      |
+| 9 | NSW Traffic Volume Counts                                | `load_nsw_traffic_counts()`    | ❌ fixture only                                  | NSW traffic EDA + forecast                                                                         |
+
+**Real files currently live under human-named folders** (whatever the
+person who downloaded them called it), not the canonical `source_name`
+keys — e.g. `data/bronze/Australian Petroleum statistics consumption cover/`. `clean.py`'s `BRONZE_FOLDER_ALIASES` maps every folder name
+we've seen used to its canonical source; add to that dict if a new
+folder name shows up rather than renaming folders to match.
+
+## Real-data caveats — read before writing these into the report
+
+Four genuine data-shape findings from actually loading the real files,
+each handled explicitly in code (not silently glossed over):
+
+1. **State emissions = whole transport sector, not road-only.** The
+   Emission Data Tables' finest state-level breakdown is `"3. Transport"`
+   — road + rail + domestic aviation + shipping combined. There is no
+   further mode split at the state level in this published source. Every
+   place this number is used is labelled "transport-sector emissions,"
+   not "road transport emissions" specifically.
+2. **ACT has no state-level fuel sales data.** Confirmed against the raw
+   source file's own `State` column — not a parsing gap. `annual_master`
+   therefore covers 7 states, not 8.
+3. **Vehicle registrations is a snapshot, not a time series.** The real
+   file breaks the *current* fleet down by year of *manufacture*
+   (`yom` in the filename), not registrations per year. There is no
+   genuine year-varying figure available from this source, so
+   `build_annual_master()` broadcasts each state's current total fleet
+   size as a constant across every year — logged with a warning every
+   run. Don't read year-to-year variation into this feature; there isn't
+   any.
+4. **The emission-factor validation gap (~30%) is expected, not a bug.**
+   `validate_emission_factors()` compares *road-fuel-only* implied
+   emissions against the *whole-transport-sector* reported figure (see
+   point 1) — implied should run lower, roughly in proportion to road's
+   share of transport fuel use. See that function's docstring for the
+   full reasoning and what a gap outside the expected range would mean.
+
+## Switching remaining sources to real data
+
+Sources 3 (OData API) and 9 (NSW traffic) still use fixtures. Same
+mechanism as everything else — `clean._locate()` finds real data
+automatically:
+
+1. Download the file.
+2. Drop it into `data/bronze/<source_name>/` (or add a new alias to
+   `BRONZE_FOLDER_ALIASES` if you'd rather use a human-readable folder
+   name), filename must not contain `SAMPLE`.
+3. Re-run `python run_pipeline.py` and check the log line confirms
+   "Using real data."
+
+Note: neither loader currently branches on real-vs-fixture shape the
+way the other 7 do (see e.g. `load_population()`'s `is_real` check) —
+whoever wires these up will need to inspect the real file's actual
+structure first and add that branch, following the same pattern.
+
+## Analysis-ready tables
+
+Built by `clean.py`, all aligned to Australian financial year (labelled
+by its start year, e.g. "2020" = FY2020-21 — see `_parse_financial_year()`
+/ `_fy_start_from_date()`):
+
+- **`annual_master.csv`** — fuel consumption, road VKT, registered
+  vehicles (broadcast constant, see caveat 3 above), and transport-sector
+  emissions (the regression target). Currently 98 rows: 7 states ×
+  2010–2023 (limited by fuel data's earliest year and emissions data's
+  latest year). The main modelling table.
+- **`annual_master_with_population.csv`** — adds population and
+  per-capita features. Real ABS population data goes back to 1981, so
+  this is no longer meaningfully smaller than the base table the way it
+  was on fixtures (where it shrank from 48 rows to 16).
+- **`monthly_fuel_series.csv`** — the fuel forecasting target, ~190
+  monthly points per state on real data.
+- **`nsw_traffic_hourly.csv`** — still fixture-only (source 9).
+
+## Models
+
+**`train_emissions_regression()`** — linear regression and random
+forest, 5-fold cross-validated. Reports CV R², CV MAE, and random-forest
+feature importances.
+
+**`forecast_fuel_consumption(state, test_months)`** /
+**`forecast_nsw_traffic(station, test_hours)`** — Holt-Winters
+exponential smoothing with a seasonal-naive fallback if `statsmodels`
+fails (this happened on one teammate's environment — a real
+`statsmodels` bug, fixed by upgrading to ≥0.15.0, see `requirements.txt`
+and `CHANGELOG.md`).
+
+> **Every model result's `_caveat` field is generated at runtime**, not
+> hardcoded — it deliberately does not assert whether real or fixture
+> data produced it, since that depends on what was in `data/bronze/`
+> when the pipeline ran. Check that run's "Using real data" / "Using
+> sample data" log lines, not this file, for the actual answer.
+
+## Data quality validation
+
+`src/analysis/validate.py`:
+
+- **`validate_emission_factors()`** — fuel × published NGA factor vs.
+  reported emissions. See caveat 4 above for why a ~30% gap is expected
+  here, not a bug.
+- **`validate_ghg_cross_source()`** — CSV inventory vs. OData API pull.
+  **Currently uninformative**: state_territory_ghg is real, but
+  nga_odata_api is still the fixture (source 3 above), so this compares
+  real data against random numbers. Becomes meaningful once a real
+  OData pull replaces the fixture.
+
+## Testing
+
+```bash
+pytest tests/ -v
+```
+
+28 tests. Master-table shape tests deliberately check structure (row
+count > 0, valid state codes, no nulls, positive values) rather than
+exact numbers — `_locate()` prefers real data whenever it's present, so
+hardcoded fixture-era counts (48 rows, 8 states, 6 years) would make
+these tests fail the moment real data was added. Structural checks stay
+meaningful in both cases.
+
+## Continuous Integration
+
+`.github/workflows/ci.yml` runs on every push/PR: installs
+`requirements.txt`, runs tests, runs the full pipeline, uploads outputs
+as a build artifact. Since real files now live in `data/bronze/` and are
+committed, CI exercises the same real-data path as local runs — not a
+fixture-only smoke test.
+
+## Diagrams
+
+`docs/architecture/` and `docs/workflow/` — regenerate after any
+structural change with `python scripts/generate_diagrams.py`.
+
+## Repository layout
+
+```
+src/analysis/
+  clean.py       # load, standardise, merge -> data/processed/ (real-file-aware)
+  eda.py         # figures -> reports/figures/
+  model.py       # train + evaluate -> reports/model_results/
+  validate.py    # data quality checks -> reports/validation/
+tests/
+  test_clean.py  # 28 tests, run with `pytest tests/`
+scripts/
+  generate_diagrams.py
+.github/workflows/
+  ci.yml
+run_pipeline.py
+fixtures/        # small synthetic sample data -- fallback only now
+data/bronze/     # real downloaded files (human-named folders) + dated fixture copies
+data/processed/  # cleaned/merged output (generated)
+reports/         # figures + model results + validation (generated)
+docs/            # architecture and workflow diagrams
+```
+
+## Known gaps & next steps
+
+- Sources 3 (OData API) and 9 (NSW traffic) still fixture-only.
+- Source 7 (Quarterly GHG Update) loaded but not merged anywhere — no
+  state dimension exists in it to merge on.
+- The four real-data caveats above (whole-sector emissions, ACT gap,
+  vehicle-registration snapshot, expected validation gap) should be
+  stated explicitly anywhere these results are cited in the report.
+- Individual per-teammate git commits — adopt the branch/PR flow below.
+
+## Git Workflow
+
+**Model: GitHub Flow** — one protected `main` + short-lived feature branches.
+
+```
+main ──●────────●────────●────────●──── (always working, protected)
+        \        \        \        \
+         feature/ feature/ feature/ feature/
+         clean-   eda-     model-   docs-
+         merge    figures  cv       readme
+         ●──●──●  ●──●     ●──●──●  ●──●
+              ↑ PR + review + squash-merge, then delete branch
+```
+
+### Branch naming
+
+`<type>/<epic-slug>-<task-slug>`:
+
+| Type         | When                  | Example                           |
+| ------------ | --------------------- | --------------------------------- |
+| `feature/` | New functionality     | `feature/model-forecast-cv`     |
+| `fix/`     | Bug fix               | `fix/clean-null-state-codes`    |
+| `test/`    | Tests-only change     | `test/model-regression-cv`      |
+| `docs/`    | README/docs only      | `docs/readme-quickstart`        |
+| `chore/`   | Tooling, config, deps | `chore/pin-statsmodels-version` |
+
+### Commit messages — Conventional Commits
+
+```
+feat(clean): parse real petroleum sales sheet, road-fuel products only
+fix(validate): align fuel to financial year before comparing to emissions
+docs(readme): document real-data caveats
+```
+
+### PR workflow
+
+1. `git checkout main && git pull`
+2. `git checkout -b feature/<epic>-<task>`
+3. Commit in small chunks, not one batch per epic — this matters for
+   Assessment 2 Section 4, where each teammate links their own commits
+4. Push early, open a draft PR for visibility
+5. One approving review before merge
+6. Squash-merge into `main`, delete the branch
+
+> **Note on this repo's history:** commits before this point were made
+> directly to `main` while the project was rebuilt solo after the
+> architecture change (see CHANGELOG.md). Adopt the branch/PR flow above
+> for all work from here forward, so each team member has individual,
+> linkable commit evidence for their contribution page.

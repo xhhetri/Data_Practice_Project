@@ -60,7 +60,7 @@ def plot_distributions(annual: pd.DataFrame) -> None:
         ax.set_title(col)
         ax.set_xlabel(col)
         ax.set_ylabel("count")
-    fig.suptitle("Distributions -- annual state-level features (n=48)")
+    fig.suptitle(f"Distributions -- annual state-level features (n={len(annual)})")
     fig.tight_layout()
     out = FIGURES_DIR / "01_distributions.png"
     fig.savefig(out, dpi=150)
@@ -69,12 +69,16 @@ def plot_distributions(annual: pd.DataFrame) -> None:
 
 
 def plot_state_trends(annual: pd.DataFrame) -> None:
-    """Road transport emissions over time, one line per state."""
+    """Transport-sector GHG emissions over time, one line per state.
+    (Real data: this is state_territory_ghg's whole "3. Transport" row --
+    road + rail + domestic aviation + shipping combined, not road-only --
+    see clean.py: load_state_territory_ghg() docstring.)"""
     fig, ax = plt.subplots(figsize=(9, 6))
     for state, grp in annual.groupby("state"):
         grp = grp.sort_values("year")
         ax.plot(grp["year"], grp[TARGET_COL], marker="o", label=state)
-    ax.set_title("Road transport GHG emissions by state, 2020-2025")
+    year_min, year_max = int(annual["year"].min()), int(annual["year"].max())
+    ax.set_title(f"Transport-sector GHG emissions by state, {year_min}-{year_max}")
     ax.set_xlabel("Year")
     ax.set_ylabel("kt CO2-e")
     ax.legend(ncol=2, fontsize=8)
@@ -89,11 +93,16 @@ def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
     """
     Correlation matrix across features and target.
 
-    Caveat (state this in the report): the current data behind this figure
-    is synthetic fixture data, not the live government sources, so these
-    correlations are not evidence of a real relationship -- they only
-    prove the pipeline computes correlations correctly. Re-run against
-    live data before citing any correlation figure.
+    Whether this is meaningful depends on whether real or fixture data
+    produced it -- check clean.py's "Using real data" / "Using sample
+    data" log lines from this run, don't assume either case. On fixture
+    data (synthetic, generated independently per source) correlations
+    are near-zero and prove only that the pipeline computes correlations
+    correctly, not anything about real relationships. On real data,
+    expect fuel/VKT/vehicles to correlate strongly with emissions
+    (R^2 close to 1) -- that's the expected accounting-identity
+    structure (emissions are *constructed from* fuel sales via published
+    factors), not a genuine predictive finding to celebrate uncritically.
     """
     corr = annual[FEATURE_COLS + [TARGET_COL]].corr()
     fig, ax = plt.subplots(figsize=(7, 6))
@@ -106,7 +115,7 @@ def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
         for j in range(len(corr.columns)):
             ax.text(j, i, f"{corr.iloc[i, j]:.2f}", ha="center", va="center")
     fig.colorbar(im, label="Pearson correlation")
-    ax.set_title("Feature correlation matrix (fixture data -- see caveat in docstring)")
+    ax.set_title(f"Feature correlation matrix (n={len(annual)} -- see caveat in docstring)")
     fig.tight_layout()
     out = FIGURES_DIR / "03_correlation_heatmap.png"
     fig.savefig(out, dpi=150)
@@ -132,15 +141,18 @@ def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame, state: str = "NSW") -> 
 def plot_per_capita(annual_pop: pd.DataFrame) -> None:
     """
     Per-capita emissions vs per-capita VKT -- the Kaya-decomposition-style
-    view. n=16 (2024-2025 only, population data doesn't go back further
-    in the current sources) -- treat as illustrative, not conclusive.
+    view. Sample size depends on the overlap between population coverage
+    and the other sources' coverage (see build_annual_master_with_population()
+    in clean.py) -- on fixtures this was a small n=16; on real data it's
+    much larger since ABS population data goes back to 1981. Check the
+    actual n in the title below rather than assuming either case.
     """
     fig, ax = plt.subplots(figsize=(7, 6))
     for state, grp in annual_pop.groupby("state"):
         ax.scatter(grp["vkt_per_capita_km"], grp["emissions_per_capita_kg"], label=state)
     ax.set_xlabel("VKT per capita (km)")
     ax.set_ylabel("Emissions per capita (kg CO2-e)")
-    ax.set_title("Per-capita emissions vs travel demand (n=16 -- illustrative only)")
+    ax.set_title(f"Per-capita emissions vs travel demand (n={len(annual_pop)})")
     ax.legend(fontsize=8)
     fig.tight_layout()
     out = FIGURES_DIR / "05_per_capita_scatter.png"

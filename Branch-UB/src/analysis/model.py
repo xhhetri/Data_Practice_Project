@@ -1,27 +1,35 @@
 """
 model.py
 --------
-Two models, matching the project's Theme 2 (Predictive Analytics and
+Three models, matching the project's Theme 2 (Predictive Analytics and
 Forecasting) brief:
 
 1. train_emissions_regression() -- regression predicting annual state
-   road-transport emissions from fuel, VKT and vehicle registrations.
-   n=48 (8 states x 6 years). Cross-validated, not a single train/test
-   split, because 48 rows is too few to trust one split.
+   Transport-sector emissions from fuel, VKT and vehicle registrations.
+   Cross-validated (not a single train/test split) since this table is
+   small either way -- see clean.py: build_annual_master() for the
+   current row count and coverage, which depends on what data (fixture
+   or real) is loaded.
 
 2. forecast_fuel_consumption() -- time-series baseline forecasting
-   monthly petroleum consumption for a given state. This is the
-   "real" forecasting task: ~72 monthly points per state vs. 6 annual
-   points, so it's the one worth trusting once live data replaces the
-   fixtures.
+   monthly petroleum consumption for a given state. Uses the full
+   monthly series (far more points than the annual table), so this is
+   the model worth trusting most once real data is loaded.
 
-IMPORTANT CAVEAT, stated once here rather than scattered as comments:
-all metrics below are computed on synthetic fixture data (randomly
-generated for pipeline development). They demonstrate that the code
-runs correctly end-to-end -- they are NOT evidence about real Australian
-emissions patterns. Re-run this module against live data (see clean.py's
-source lookup order) before citing any number from reports/model_results/
-in the assessment report.
+3. forecast_nsw_traffic() -- same forecasting method, applied to hourly
+   NSW traffic volume instead of monthly fuel sales.
+
+CAVEAT, stated once here rather than scattered as comments: whether
+these results mean anything depends entirely on whether real or
+fixture data is currently loaded -- check the "Using real data" /
+"Using sample data" log lines clean.py prints when you run this. On
+fixture data (synthetic, randomly generated per source independently)
+these metrics demonstrate the code runs correctly end-to-end and
+nothing more -- they are NOT evidence about real Australian emissions
+patterns. On real data, expect near-tautological regression scores
+(R^2 close to 1) since reported emissions are *constructed from* fuel
+sales via published factors -- that's expected structure, not a
+genuine predictive achievement, and doesn't need re-verifying every run.
 """
 
 from __future__ import annotations
@@ -60,8 +68,25 @@ def _ensure_processed() -> None:
         run_clean()
 
 
+def _data_source_caveat() -> str:
+    """
+    Deliberately does NOT assert whether real or fixture data produced
+    this result -- that depends entirely on what was in data/bronze/
+    when clean.py last ran (see its "Using real data" / "Using sample
+    data" / "Falling back to fixture" log lines for the actual answer
+    on this specific run). A hardcoded caveat here would be right half
+    the time and silently wrong the other half.
+    """
+    return (
+        "Whether this reflects real or synthetic fixture data depends on "
+        "this run's sources -- check the 'Using real data' / 'Using sample "
+        "data' / 'Falling back to fixture' log lines clean.py printed "
+        "during Step 1 of this pipeline run before citing this number."
+    )
+
+
 # ---------------------------------------------------------------------
-# Model 1: annual emissions regression (cross-validated, n=48)
+# Model 1: annual emissions regression (cross-validated)
 # ---------------------------------------------------------------------
 
 def train_emissions_regression() -> dict:
@@ -95,10 +120,7 @@ def train_emissions_regression() -> dict:
     with open(RESULTS_DIR / "emissions_regression.pkl", "wb") as f:
         pickle.dump(rf_full, f)
 
-    results["_caveat"] = (
-        "n=48, synthetic fixture data. Cross-validated but not "
-        "validated against live government data. See module docstring."
-    )
+    results["_caveat"] = f"n={len(df)}. {_data_source_caveat()}"
     return results
 
 
@@ -162,7 +184,7 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
         "test_months": test_months,
         "mae_ml": round(mae, 2),
         "mape_pct": round(mape, 2),
-        "_caveat": "Synthetic fixture data -- see module docstring.",
+        "_caveat": _data_source_caveat(),
     }
     log.info("Forecast (%s, %s): MAE=%.1f ML, MAPE=%.1f%%", state, method, mae, mape)
     return result
@@ -228,7 +250,7 @@ def forecast_nsw_traffic(station: str = "NSW-STN-001", test_hours: int = 24) -> 
         "test_hours": test_hours,
         "mae_vehicles": round(mae, 2),
         "mape_pct": round(mape, 2),
-        "_caveat": "Synthetic fixture data -- see module docstring.",
+        "_caveat": _data_source_caveat(),
     }
     log.info("Traffic forecast (%s, %s): MAE=%.1f vehicles, MAPE=%.1f%%",
               station, method, mae, mape)
