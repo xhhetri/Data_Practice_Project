@@ -138,7 +138,7 @@ its start year, e.g. "2020" = FY2020-21):
 
 ## Models
 
-**`train_emissions_regression()`** — linear regression and random
+**`fit_emissions_regression()`** — linear regression and random
 forest, 5-fold cross-validated. Reports CV R², CV MAE, and random-forest
 feature importances.
 
@@ -164,6 +164,49 @@ a ~30% gap is expected, not a bug.
 (A second check, comparing this data against a National Greenhouse
 Accounts OData API pull, previously existed here. Removed along with
 that data source — see CHANGELOG.md.)
+
+## Dashboard
+
+`dashboard/index.html` — an interactive dashboard, self-contained
+(Plotly bundled locally as `dashboard/plotly.min.js`, no CDN, no
+internet needed, no server — open the file directly in a browser).
+
+- **Historical trends** — Transport-sector emissions, fuel consumption,
+  VKT, registered vehicles, and both per-capita views, switchable via
+  the metric dropdown, by state.
+- **Per-state controls** — show/hide any state, recolor any line via
+  the color swatch. Every panel below (monthly fuel, forecast bars)
+  shares the same state selection and colors.
+- **Monthly fuel consumption** — the real ~190-point-per-state series,
+  not just the annual aggregate.
+- **Models** — regression CV R²/MAE, a forecast-accuracy bar chart per
+  state, and a detail view (train / actual / forecast) for any one
+  state's fuel forecast.
+- **Validation** — the emission-factor check as an interactive scatter.
+
+Every caveat from this README (CV R² near 1 being expected, not a
+predictive triumph; the ~30% validation gap being explained by
+road-fuel-only vs. whole-transport-sector scope) is shown directly in
+the dashboard, not just documented here — a marker or teammate looking
+at the dashboard alone still gets the honest interpretation, not just
+the chart.
+
+Regenerate after any pipeline change:
+```bash
+python run_pipeline.py && python scripts/build_dashboard.py
+```
+`dashboard/template.html` is the source (HTML/CSS/JS); `build_dashboard.py`
+reads the real processed data and injects it as embedded JSON — nothing
+is fetched at runtime, so there's no CORS/network dependency when
+someone just opens the file.
+
+## Notebook
+
+`src/analysis/analysis.ipynb` — same results as the pipeline, displayed
+inline as well as saved. Calls the exact same functions in
+`clean.py`/`eda.py`/`model.py`/`validate.py` directly, so there's no
+duplicated plotting logic — running it also writes to `reports/`, same
+as `python run_pipeline.py` does. Open it in Jupyter and run all cells.
 
 ## Testing
 
@@ -201,10 +244,16 @@ src/analysis/
   eda.py         # figures -> reports/figures/
   model.py       # train + evaluate -> reports/model_results/
   validate.py    # data quality check -> reports/validation/
+  analysis.ipynb # interactive notebook, same functions as the pipeline
 tests/
   test_clean.py  # 24 tests
 scripts/
   generate_diagrams.py
+  build_dashboard.py   # -> dashboard/index.html
+dashboard/
+  template.html  # source (HTML/CSS/JS)
+  index.html     # generated -- open this one
+  plotly.min.js  # bundled locally, no CDN dependency
 .github/workflows/
   ci.yml
 run_pipeline.py

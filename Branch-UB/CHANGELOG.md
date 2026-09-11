@@ -333,3 +333,119 @@ worth being clear about, since the data was never the constraint.
 sensible variation, not a bug. Every state's monthly chart shows the
 same COVID-era dip around early 2020, which is exactly the kind of
 cross-state consistency that's reassuring to see in genuinely real data.
+
+## [Unreleased] - 2026-09-11 (notebook for inline display)
+
+### Added — src/analysis/analysis.ipynb
+
+Every plotting/reporting function in `eda.py`, `model.py`, and
+`validate.py` now takes a `save: bool = True` parameter. Default
+behaviour (used by `run_pipeline.py`/CI) is unchanged -- saves to
+`reports/` exactly as before. The notebook calls the same functions
+with `save=False`, so charts render inline in the notebook cell and
+nothing is written to disk -- no duplicated plotting code, no export
+side effect from running the notebook.
+
+Verified, not assumed: executed the notebook headlessly via `nbclient`
+and inspected the output cells directly -- 13 inline PNG images
+rendered (5 EDA figures, 7 per-state forecast figures, 1 validation
+figure), 0 errors, and `reports/`'s file count was identical (16 files)
+before and after running it, confirming zero export occurred.
+
+Note: `matplotlib.use("Agg")` (needed so the CLI/CI path runs headless)
+does not auto-render in Jupyter the way the default "inline" backend
+does -- a bare Figure as a cell's last expression produced no image
+output at all when first tried. Fixed with a small `show(fig)` helper
+in the notebook that rasterises the figure to PNG bytes in memory and
+displays those directly, which works regardless of which backend is
+active.
+
+## [Unreleased] - 2026-09-11 (simplified notebook -- dropped save parameter)
+
+### Changed — reverted the save=True/False parameter added in the previous entry
+
+That approach worked but added a parameter every plotting function had
+to carry, purely to support one use case (the notebook). Decided it
+wasn't worth the complexity: `eda.py`, `model.py`, and `validate.py`'s
+functions now always save (no parameter, back to how they were before
+that entry) -- `analysis.ipynb` calls them directly and additionally
+displays what's returned. Running the notebook now also writes to
+`reports/`, same as `python run_pipeline.py` -- this is an intentional
+simplification, not an oversight.
+
+Also fixed the AttributeError a teammate hit
+(`'NoneType' object has no attribute 'savefig'`) — caused by an
+already-running kernel still holding the *original* pre-return-value
+version of these functions in memory after the file on disk had been
+updated. Editing a `.py` file does not reload it in a live kernel;
+noted this explicitly at the top of the notebook now.
+
+Verified: full pipeline + 24 tests pass, and the notebook was executed
+headlessly end-to-end -- 13 inline images rendered, 0 errors, and all
+16 expected files present in `reports/` afterward (same as a normal
+pipeline run).
+
+## [Unreleased] - 2026-09-11 (interactive dashboard)
+
+### Added — dashboard/index.html
+
+Interactive, self-contained dashboard (`dashboard/`): historical trends
+(emissions, fuel, VKT, vehicles, per-capita) with per-state show/hide
+and recolor controls, monthly fuel consumption, model results
+(regression stats, forecast-accuracy bar chart, per-state forecast
+detail), and the emission-factor validation as an interactive scatter.
+Every caveat already documented in this README (CV R² near 1 being
+expected, not a predictive win; the ~30% validation gap being explained
+by scope, not error) is shown directly in the dashboard's own UI, not
+left for someone to find only by reading the docs separately.
+
+`scripts/build_dashboard.py` reads the real processed data and embeds
+it as JSON directly in the HTML -- no fetch(), no CORS, no server, no
+network dependency at runtime. `model.py`'s `forecast_fuel_consumption()`
+was extended to also return the full train/actual/forecast series (not
+just summary MAE/MAPE), needed for the dashboard's forecast-detail
+chart -- additive, doesn't change existing behaviour.
+
+### Fixed — bundled Plotly.js locally instead of using a CDN
+
+First version linked `https://cdn.plot.ly/...`. Verified with a real
+headless browser (Playwright) before calling this done, rather than
+assuming a CDN `<script>` tag just works -- and it didn't: the CDN
+request failed in testing, leaving `Plotly is not defined` and a
+completely blank dashboard. Fixed by bundling `plotly.min.js` locally
+in `dashboard/` (via `npm install plotly.js-dist-min`) so the dashboard
+has no runtime network dependency at all -- it works exactly the same
+whether opened online, offline, or on a network that blocks the CDN.
+
+### Fixed — three charts (monthly fuel, forecast bar, forecast detail) rendering completely blank
+
+Real bug, found by actually loading the page and screenshotting it, not
+by reading the code: `PLOT_LAYOUT_BASE`'s nested `xaxis`/`yaxis` objects
+were shared by reference across all charts. Spreading `{...PLOT_LAYOUT_BASE}`
+only shallow-copies the top-level object -- the nested `xaxis`/`yaxis`
+sub-objects stayed shared. Plotly mutates whatever axis object it's
+given (attaching computed `range`, `autorange`, `type` after rendering),
+so after the first chart rendered (a numeric year axis, range
+~2009-2024), every later chart inherited that exact same mutated axis
+object -- including charts that needed a date-string axis, which then
+silently failed to plot against a numeric range meant for years.
+
+Confirmed the root cause directly (not just patched and hoped) by
+inspecting `PLOT_LAYOUT_BASE.xaxis` in a live page after rendering:
+it had picked up `type: "linear", range: [2009.2, 2023.8]` from the
+first chart. Fixed with a `freshLayout()` helper that constructs a
+brand-new `xaxis`/`yaxis` object on every call -- no chart shares any
+nested object with any other chart.
+
+### Verified
+- Full pipeline (24 tests, `python run_pipeline.py`) and the dashboard
+  rebuild (`python scripts/build_dashboard.py`) both run clean.
+- Loaded the actual generated `dashboard/index.html` in a real headless
+  browser (Playwright): 0 console errors, 0 page errors, full-page
+  screenshot inspected directly.
+- Interactivity tested by real DOM manipulation, not assumed: unchecking
+  a state removes its trace; switching the metric dropdown updates the
+  chart and title; changing a state's color updates the rendered line
+  color; changing the forecast-detail state selector updates that
+  chart's three traces. All four confirmed via direct JS-state
+  inspection after each action, not just "it looks right."

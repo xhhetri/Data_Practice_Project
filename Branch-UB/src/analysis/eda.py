@@ -2,9 +2,16 @@
 eda.py
 ------
 Exploratory data analysis on the processed tables built by clean.py.
-Every figure is saved to reports/figures/ rather than shown interactively,
-so this can run headless (CI, or this sandbox) and the outputs are
-committable evidence for the report/repo.
+
+Every plot_*() function takes a `save: bool = True` parameter and always
+returns the matplotlib Figure object:
+- save=True (the default, used by run() / the CLI pipeline): writes the
+  PNG to reports/figures/ as before, for the report/repo.
+- save=False (used by analysis.ipynb): skips the file write entirely,
+  returns the Figure only, for inline display in a notebook cell.
+
+Either way it's the exact same plotting code -- the notebook doesn't
+duplicate any of this, it just calls these functions with save=False.
 """
 
 from __future__ import annotations
@@ -14,7 +21,7 @@ import sys
 from pathlib import Path
 
 import matplotlib
-matplotlib.use("Agg")  # headless backend -- no display needed
+matplotlib.use("Agg")  # headless backend -- no display needed for the script/CI path
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -51,7 +58,7 @@ def _load_processed() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     return annual, annual_pop, monthly_fuel
 
 
-def plot_distributions(annual: pd.DataFrame) -> None:
+def plot_distributions(annual: pd.DataFrame, save: bool = True) -> plt.Figure:
     """Histogram of each numeric feature and the target."""
     cols = FEATURE_COLS + [TARGET_COL]
     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
@@ -62,13 +69,14 @@ def plot_distributions(annual: pd.DataFrame) -> None:
         ax.set_ylabel("count")
     fig.suptitle(f"Distributions -- annual state-level features (n={len(annual)})")
     fig.tight_layout()
-    out = FIGURES_DIR / "01_distributions.png"
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    log.info("Saved %s", out)
+    if save:
+        out = FIGURES_DIR / "01_distributions.png"
+        fig.savefig(out, dpi=150)
+        log.info("Saved %s", out)
+    return fig
 
 
-def plot_state_trends(annual: pd.DataFrame) -> None:
+def plot_state_trends(annual: pd.DataFrame, save: bool = True) -> plt.Figure:
     """Transport-sector GHG emissions over time, one line per state.
     (Real data: this is state_territory_ghg's whole "3. Transport" row --
     road + rail + domestic aviation + shipping combined, not road-only --
@@ -83,13 +91,14 @@ def plot_state_trends(annual: pd.DataFrame) -> None:
     ax.set_ylabel("kt CO2-e")
     ax.legend(ncol=2, fontsize=8)
     fig.tight_layout()
-    out = FIGURES_DIR / "02_emissions_trend_by_state.png"
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    log.info("Saved %s", out)
+    if save:
+        out = FIGURES_DIR / "02_emissions_trend_by_state.png"
+        fig.savefig(out, dpi=150)
+        log.info("Saved %s", out)
+    return fig
 
 
-def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
+def plot_correlation_heatmap(annual: pd.DataFrame, save: bool = True) -> plt.Figure:
     """
     Correlation matrix across features and target.
 
@@ -117,13 +126,14 @@ def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
     fig.colorbar(im, label="Pearson correlation")
     ax.set_title(f"Feature correlation matrix (n={len(annual)} -- see caveat in docstring)")
     fig.tight_layout()
-    out = FIGURES_DIR / "03_correlation_heatmap.png"
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    log.info("Saved %s", out)
+    if save:
+        out = FIGURES_DIR / "03_correlation_heatmap.png"
+        fig.savefig(out, dpi=150)
+        log.info("Saved %s", out)
+    return fig
 
 
-def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame) -> None:
+def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame, save: bool = True) -> plt.Figure:
     """Monthly fuel consumption, one panel per state -- the forecasting
     target. Independent y-axis scales per panel (not shared) since fuel
     volumes differ by an order of magnitude between the largest states
@@ -144,13 +154,14 @@ def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame) -> None:
         ax.axis("off")  # hide any unused grid cells (7 states, 8 grid slots)
     fig.suptitle("Monthly petroleum consumption by state")
     fig.tight_layout()
-    out = FIGURES_DIR / "04_monthly_fuel_by_state.png"
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    log.info("Saved %s", out)
+    if save:
+        out = FIGURES_DIR / "04_monthly_fuel_by_state.png"
+        fig.savefig(out, dpi=150)
+        log.info("Saved %s", out)
+    return fig
 
 
-def plot_per_capita(annual_pop: pd.DataFrame) -> None:
+def plot_per_capita(annual_pop: pd.DataFrame, save: bool = True) -> plt.Figure:
     """
     Per-capita emissions vs per-capita VKT -- the Kaya-decomposition-style
     view. Sample size depends on the overlap between population coverage
@@ -167,21 +178,29 @@ def plot_per_capita(annual_pop: pd.DataFrame) -> None:
     ax.set_title(f"Per-capita emissions vs travel demand (n={len(annual_pop)})")
     ax.legend(fontsize=8)
     fig.tight_layout()
-    out = FIGURES_DIR / "05_per_capita_scatter.png"
-    fig.savefig(out, dpi=150)
-    plt.close(fig)
-    log.info("Saved %s", out)
+    if save:
+        out = FIGURES_DIR / "05_per_capita_scatter.png"
+        fig.savefig(out, dpi=150)
+        log.info("Saved %s", out)
+    return fig
 
 
 def run() -> None:
+    """CLI/CI entry point -- saves every figure (save=True, the default),
+    closes each one after saving since nothing here will display them.
+    For inline display without saving, see analysis.ipynb, which calls
+    these same functions with save=False instead."""
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     annual, annual_pop, monthly_fuel = _load_processed()
 
-    plot_distributions(annual)
-    plot_state_trends(annual)
-    plot_correlation_heatmap(annual)
-    plot_monthly_fuel_series(monthly_fuel)
-    plot_per_capita(annual_pop)
+    for fig in (
+        plot_distributions(annual),
+        plot_state_trends(annual),
+        plot_correlation_heatmap(annual),
+        plot_monthly_fuel_series(monthly_fuel),
+        plot_per_capita(annual_pop),
+    ):
+        plt.close(fig)  # script/CI run -- nothing will display these, free the memory
 
     log.info("EDA complete -- figures in %s", FIGURES_DIR)
 

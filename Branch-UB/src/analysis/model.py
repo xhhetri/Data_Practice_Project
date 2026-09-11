@@ -4,7 +4,7 @@ model.py
 Two models, matching the project's Theme 2 (Predictive Analytics and
 Forecasting) brief:
 
-1. train_emissions_regression() -- regression predicting annual state
+1. fit_emissions_regression() -- regression predicting annual state
    Transport-sector emissions from fuel, VKT and vehicle registrations.
    Cross-validated (not a single train/test split) since this table is
    small either way -- see clean.py: build_annual_master() for the
@@ -39,6 +39,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, cross_val_predict
@@ -86,7 +89,7 @@ def _data_source_caveat() -> str:
 # Model 1: annual emissions regression (cross-validated)
 # ---------------------------------------------------------------------
 
-def train_emissions_regression() -> dict:
+def fit_emissions_regression() -> dict:
     _ensure_processed()
     df = pd.read_csv(PROCESSED_DIR / "annual_master.csv")
     X = df[FEATURE_COLS].values
@@ -160,9 +163,6 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
     mape = float(np.mean(np.abs((test - forecast.values) / test)) * 100)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(train.index, train.values, label="train")
@@ -172,8 +172,9 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
     ax.set_ylabel("Consumption (ML)")
     ax.legend()
     fig.tight_layout()
-    fig.savefig(REPO_ROOT / "reports" / "figures" / f"06_forecast_{state}.png", dpi=150)
-    plt.close(fig)
+    out = REPO_ROOT / "reports" / "figures" / f"06_forecast_{state}.png"
+    fig.savefig(out, dpi=150)
+    log.info("Saved %s", out)
 
     result = {
         "state": state,
@@ -182,6 +183,20 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
         "mae_ml": round(mae, 2),
         "mape_pct": round(mape, 2),
         "_caveat": _data_source_caveat(),
+        "_figure": fig,  # not JSON-serialisable -- run() pops this before dumping to
+                          # metrics.json; a notebook can grab it directly to display inline
+        "series": {
+            # Full series as {date, value} lists -- used by scripts/build_dashboard.py
+            # to draw the actual train/actual/forecast lines interactively, not just
+            # report the summary MAE/MAPE numbers. Dates as ISO strings so this stays
+            # JSON-serialisable (unlike the pandas Timestamp index itself).
+            "train": [{"date": d.strftime("%Y-%m-%d"), "value": round(v, 1)}
+                      for d, v in train.items()],
+            "actual": [{"date": d.strftime("%Y-%m-%d"), "value": round(v, 1)}
+                       for d, v in test.items()],
+            "forecast": [{"date": d.strftime("%Y-%m-%d"), "value": round(v, 1)}
+                         for d, v in forecast.items()],
+        },
     }
     log.info("Forecast (%s, %s): MAE=%.1f ML, MAPE=%.1f%%", state, method, mae, mape)
     return result
@@ -190,7 +205,7 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
 def run() -> None:
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
     all_results = {
-        "emissions_regression": train_emissions_regression(),
+        "emissions_regression": fit_emissions_regression(),
     }
 
     _ensure_processed()
@@ -198,7 +213,10 @@ def run() -> None:
     states = sorted(monthly["state"].unique())
     log.info("Forecasting fuel consumption for all %d states: %s", len(states), states)
     for state in states:
-        all_results[f"fuel_forecast_{state}"] = forecast_fuel_consumption(state)
+        result = forecast_fuel_consumption(state)
+        fig = result.pop("_figure")  # script/CI run -- nothing will display this, free the memory
+        plt.close(fig)
+        all_results[f"fuel_forecast_{state}"] = result
 
     with open(RESULTS_DIR / "metrics.json", "w") as f:
         json.dump(all_results, f, indent=2)

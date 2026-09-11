@@ -47,7 +47,7 @@ log = logging.getLogger(__name__)
 VALIDATION_DIR = REPO_ROOT / "reports" / "validation"
 
 
-def validate_emission_factors() -> pd.DataFrame:
+def validate_emission_factors(save: bool = True) -> tuple[pd.DataFrame, plt.Figure]:
     """
     implied_kt_co2e = annual fuel consumption (ML) x factor (kg CO2e / L)
     -- the ML->L and kg->kt conversions cancel exactly (both 1e6), so no
@@ -105,8 +105,9 @@ def validate_emission_factors() -> pd.DataFrame:
         comparison["abs_diff_kt"] / comparison["ghg_kt_co2e"].replace(0, pd.NA) * 100
     )
 
-    VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
-    comparison.to_csv(VALIDATION_DIR / "emission_factor_check.csv", index=False)
+    if save:
+        VALIDATION_DIR.mkdir(parents=True, exist_ok=True)
+        comparison.to_csv(VALIDATION_DIR / "emission_factor_check.csv", index=False)
 
     mean_pct = comparison["pct_diff"].mean()
     log.info(
@@ -130,14 +131,17 @@ def validate_emission_factors() -> pd.DataFrame:
     ax.set_title(f"Emission factor validation (n={len(comparison)})")
     ax.legend()
     fig.tight_layout()
-    fig.savefig(VALIDATION_DIR / "emission_factor_check.png", dpi=150)
-    plt.close(fig)
+    if save:
+        out = VALIDATION_DIR / "emission_factor_check.png"
+        fig.savefig(out, dpi=150)
+        log.info("Saved %s", out)
 
-    return comparison
+    return comparison, fig
 
 
 def run() -> None:
-    validate_emission_factors()
+    comparison, fig = validate_emission_factors()
+    plt.close(fig)  # script/CI run -- nothing will display this, free the memory
     log.info("Validation reports written to %s", VALIDATION_DIR)
 
 
