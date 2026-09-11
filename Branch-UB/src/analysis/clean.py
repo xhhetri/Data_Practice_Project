@@ -359,28 +359,67 @@ def load_state_territory_ghg() -> pd.DataFrame:
 
 def load_vehicle_registrations() -> pd.DataFrame:
     """
-    Real: current registered-fleet CSV, broken down by year of
-    MANUFACTURE, not year of registration -- this is a single snapshot
-    of today's fleet composition, not a historical annual time series.
-    (Filename suffix 'yom' = year of manufacture, confirming this.)
+    Real: BITRE Yearbook, 'Table 4.6a-c' sheet, the "Table 4.6b" section
+    within it -- genuine annual state-level vehicle stock (1982-2025,
+    some early years missing but complete from 2010 on), wide format
+    (states as columns), in thousands (converted to raw counts here).
 
-    Returns state, vehicle_type, year_of_manufacture, count -- deliberately
-    NOT renamed to a 'year' column, so it can't be silently misused as if
-    it were a real per-year time series. See build_annual_master() for
-    how this gets folded in (as a constant current-fleet-size per state,
-    not a genuine year-varying feature).
-    Fixture fallback: flat state,vehicle_type,year,count CSV (the fixture
-    *is* shaped as a real annual time series -- a simplification the real
-    data doesn't support).
+    This REPLACES an earlier version of this loader, which used a
+    manufacture-year fleet snapshot CSV -- that gave a single current
+    total per state with no real year-to-year variation at all (every
+    year in annual_master.csv showed the identical number). Switched
+    once a genuine annual source was found in the same BITRE workbook
+    already used for VKT -- see CHANGELOG for the full reasoning.
+
+    Source's own caveat, worth citing for recent years: "Uncertainty in
+    these estimates is higher after 2020 when the last Survey of Motor
+    Vehicle Use was completed... Data from 2021 onwards was provided
+    from BITRE as opposed to the ABS."
+
+    Fixture fallback: flat state,vehicle_type,year,count CSV.
     """
-    path = _locate("vehicle_registrations")
-    is_real = "year_of_manufacture" in _read_tabular(path, nrows=0).columns
+    bitre_path = _locate("bitre_yearbook")
+    is_real = (
+        bitre_path.suffix.lower() in (".xlsx", ".xls")
+        and "Table 4.6a-c" in pd.ExcelFile(bitre_path).sheet_names
+    )
 
     if is_real:
-        df = _read_tabular(path)
-        df = df.rename(columns={"state_abb": "state", "no_vehicles": "count"})
+        raw = pd.read_excel(bitre_path, sheet_name="Table 4.6a-c", header=None)
+        title_col = raw[0].astype(str)
+        matches = raw.index[title_col.str.contains("Table 4.6b", na=False)]
+        if len(matches) == 0:
+            raise ValueError(
+                "'Table 4.6b' section not found inside the 'Table 4.6a-c' sheet -- "
+                "the workbook's internal layout may have changed."
+            )
+        title_row = matches[0]
+        state_header_row = title_row + 2
+        states_in_row = raw.iloc[state_header_row, 1:9].tolist()
+        data_start = title_row + 4
+
+        year_pattern = re.compile(r"^(19|20)\d{2}$")
+        records = []
+        r = data_start
+        while r < len(raw):
+            year_str = str(raw.iloc[r, 0]).strip()
+            if not year_pattern.match(year_str):
+                break  # hit the trailing notes/next-table text -- data section is over
+            year = int(year_str)
+            for i, state in enumerate(states_in_row, start=1):
+                val = raw.iloc[r, i]
+                if pd.notna(val):
+                    records.append({"state": state, "year": year, "count": val * 1000})
+            r += 1
+        df = pd.DataFrame(records)
     else:
-        df = _read_tabular(path)
+        df = _read_tabular(_locate("vehicle_registrations"))
+        if "year_of_manufacture" in df.columns:
+            # The old real CSV shape, only reached if bitre_yearbook's
+            # real file isn't available for some reason -- reintroduces
+            # the flat-line limitation this rewrite fixes, but better
+            # than crashing.
+            df = df.rename(columns={"state_abb": "state", "no_vehicles": "count"})
 
     df = _standardise_state(df)
     df["count"] = pd.to_numeric(df["count"], errors="coerce")
@@ -436,10 +475,12 @@ def build_annual_master() -> pd.DataFrame:
     A financial year is labelled by its start calendar year throughout
     (e.g. "2020" means FY2020-21).
 
-    registered_vehicles is a special case: the real source is a current
-    fleet snapshot by manufacture year, not an annual time series, so
-    it's broadcast as a constant per state across every year rather than
-    genuinely varying year to year -- see load_vehicle_registrations().
+    registered_vehicles now comes from a genuine annual state-level
+    series (BITRE Yearbook, "Table 4.6b") -- see
+    load_vehicle_registrations(). The broadcast-constant fallback below
+    only triggers if that real file isn't available and the loader
+    falls back to the old manufacture-year-snapshot CSV shape instead
+    -- not the normal path, but handled rather than left to crash.
     """
     fuel = (
         load_petroleum_statistics()
@@ -477,12 +518,13 @@ def build_annual_master() -> pd.DataFrame:
         master = master.merge(vehicles, on=["state", "year"], how="inner")
     else:
         log.warning(
-            "vehicle_registrations has no 'year' column (it's a "
-            "manufacture-year fleet snapshot, not an annual time series) "
-            "-- broadcasting each state's current total fleet size across "
-            "all years instead. This feature does NOT vary within a "
-            "state across years -- keep that in mind interpreting any "
-            "feature-importance result for it."
+            "vehicle_registrations has no 'year' column -- this means "
+            "it fell back to the old manufacture-year fleet snapshot CSV "
+            "instead of the real annual BITRE series (Table 4.6b). This "
+            "is NOT the normal path -- check why bitre_yearbook's real "
+            "file wasn't found. Broadcasting each state's current fleet "
+            "size across all years as a fallback; this feature will NOT "
+            "vary within a state across years while this fallback is active."
         )
         current_fleet = (
             veh_raw.groupby("state", as_index=False)["count"]

@@ -85,15 +85,21 @@ INFO: Using real data for 'petroleum_statistics': data/bronze/Australian Petrole
 
 ## Data sources
 
-| # | Source                                                   | Loader                           | Used by                                                        |
-| - | -------------------------------------------------------- | -------------------------------- | -------------------------------------------------------------- |
-| 1 | Australian Petroleum Statistics                          | `load_petroleum_statistics()`  | annual master, monthly forecast, validation                    |
-| 2 | State & Territory GHG Inventories (Emission Data Tables) | `load_state_territory_ghg()`   | annual master (regression target), validation                  |
-| 3 | National GHG Accounts Factors 2025                       | `load_nga_factors()`           | validation (emission-factor check)                             |
-| 4 | BITRE Yearbook 2025 (VKT)                                | `load_bitre_yearbook()`        | annual master                                                  |
-| 5 | Registered Road Vehicles                                 | `load_vehicle_registrations()` | annual master (as a broadcast constant — see caveat below)    |
-| 6 | Quarterly GHG Update                                     | `load_quarterly_ghg_update()`  | loaded, not merged — no state dimension exists in this source |
-| 7 | ABS Population (ERP)                                     | `load_population()`            | annual master with population                                  |
+| # | Source                                                   | Loader                           | Used by                                                                             |
+| - | -------------------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------- |
+| 1 | Australian Petroleum Statistics                          | `load_petroleum_statistics()`  | annual master, monthly forecast, validation                                         |
+| 2 | State & Territory GHG Inventories (Emission Data Tables) | `load_state_territory_ghg()`   | annual master (regression target), validation                                       |
+| 3 | National GHG Accounts Factors 2025                       | `load_nga_factors()`           | validation (emission-factor check)                                                  |
+| 4 | BITRE Yearbook 2025 (VKT)                                | `load_bitre_yearbook()`        | annual master                                                                       |
+| 5 | Registered Road Vehicles                                 | `load_vehicle_registrations()` | annual master (genuine annual series, sourced from the BITRE Yearbook — see below) |
+| 6 | Quarterly GHG Update                                     | `load_quarterly_ghg_update()`  | loaded, not merged — no state dimension exists in this source                      |
+| 7 | ABS Population (ERP)                                     | `load_population()`            | annual master with population                                                       |
+
+Note: source 5's real data comes from the *same physical file* as
+source 4 (the BITRE Yearbook workbook) — `Table 4.3` for VKT, `Table 4.6b` (inside the combined `Table 4.6a-c` sheet) for vehicle stock by
+state. `load_vehicle_registrations()` locates the `bitre_yearbook` file
+directly rather than a separate `vehicle_registrations` file for this
+reason.
 
 All real files currently live under human-named folders (whatever the
 person who downloaded them called it), not the canonical `source_name`
@@ -111,12 +117,7 @@ folder name shows up rather than renaming folders to match.
 2. **ACT has no state-level fuel sales data.** Confirmed against the raw
    source file's own `State` column — not a parsing gap. `annual_master`
    covers 7 states, not 8.
-3. **Vehicle registrations is a snapshot, not a time series.** The real
-   file breaks the *current* fleet down by year of *manufacture*, not
-   registrations per year. `build_annual_master()` broadcasts each
-   state's current total fleet size as a constant across every year —
-   logged with a warning every run.
-4. **The emission-factor validation gap (~30%) is expected.**
+3. **The emission-factor validation gap (~30%) is expected.**
    `validate_emission_factors()` compares *road-fuel-only* implied
    emissions against the *whole-transport-sector* reported figure (see
    caveat 1) — implied should run lower, roughly in proportion to
@@ -128,9 +129,8 @@ Built by `clean.py`, aligned to Australian financial year (labelled by
 its start year, e.g. "2020" = FY2020-21):
 
 - **`annual_master.csv`** — fuel consumption, road VKT, registered
-  vehicles (broadcast constant, see caveat 3), and transport-sector
-  emissions (the regression target). Currently 98 rows: 7 states ×
-  2010–2023.
+  vehicles, and transport-sector emissions (the regression target).
+  Currently 98 rows: 7 states × 2010–2023.
 - **`annual_master_with_population.csv`** — adds population and
   per-capita features.
 - **`monthly_fuel_series.csv`** — the fuel forecasting target, ~190
@@ -192,9 +192,11 @@ at the dashboard alone still gets the honest interpretation, not just
 the chart.
 
 Regenerate after any pipeline change:
+
 ```bash
 python run_pipeline.py && python scripts/build_dashboard.py
 ```
+
 `dashboard/template.html` is the source (HTML/CSS/JS); `build_dashboard.py`
 reads the real processed data and injects it as embedded JSON — nothing
 is fetched at runtime, so there's no CORS/network dependency when

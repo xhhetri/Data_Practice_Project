@@ -438,6 +438,7 @@ brand-new `xaxis`/`yaxis` object on every call -- no chart shares any
 nested object with any other chart.
 
 ### Verified
+
 - Full pipeline (24 tests, `python run_pipeline.py`) and the dashboard
   rebuild (`python scripts/build_dashboard.py`) both run clean.
 - Loaded the actual generated `dashboard/index.html` in a real headless
@@ -449,3 +450,64 @@ nested object with any other chart.
   color; changing the forecast-detail state selector updates that
   chart's three traces. All four confirmed via direct JS-state
   inspection after each action, not just "it looks right."
+
+## [Unreleased] - 2026-09-11 (dashboard caveat for flat vehicle registrations)
+
+### Fixed — dashboard didn't explain why "Registered vehicles" is flat every year
+
+The chart itself was correct (matches the real data exactly — see the
+vehicle-registrations caveat elsewhere in this file), but nothing in
+the dashboard UI told a viewer *why* it's flat, so it read as a bug
+rather than a documented data limitation. Added a per-metric note
+(`METRIC_LABELS.registered_vehicles.note`) that displays directly above
+the chart whenever that metric is selected, explaining the
+manufacture-year-snapshot limitation in place, the same way the
+regression and validation panels already surface their own caveats
+rather than leaving them only in this file.
+
+## [Unreleased] - 2026-09-11 (corrected vehicle registrations to a real annual series)
+
+### Changed — load_vehicle_registrations() now sources from a genuine annual time series
+
+**Previous state:** Used a real CSV that was a snapshot of the current
+fleet broken down by year of *manufacture*, not registrations per year
+-- there was no genuine year-to-year figure available from it, so
+`build_annual_master()` broadcast each state's current total as a
+constant across every year (flat line on every chart, correctly
+explained but still a real data-quality limitation, not fixed).
+
+**Current state:** Found a real fix rather than only documenting the
+limitation -- the BITRE Yearbook workbook (already used for VKT,
+`Table 4.3`) also contains `Table 4.6b`: genuine annual state-level
+vehicle stock, 1982-2025, complete for the project's full 2010-2023
+range. `load_vehicle_registrations()` now parses this directly (same
+physical file as `load_bitre_yearbook()`, different section) instead of
+the manufacture-year CSV. The old CSV-based path is kept as a
+defensive fallback only, clearly logged as not the normal path if it's
+ever hit.
+
+**Justification:** the flat-line limitation was a real, if honestly
+documented, weakness. Once a genuine alternative source was identified
+in a file already in the repo, fixing it outright is better than
+leaving a documented workaround in place. Removed the now-obsolete
+"vehicle registrations is a snapshot" caveat from `README.md` and the
+dashboard (`METRIC_LABELS.registered_vehicles.note`) -- leaving a
+caveat in place after the underlying problem is fixed would itself be
+inaccurate.
+
+### Findings from the fix
+
+- Regression fit improved: CV R² 0.9949 → 0.9966, CV MAE 456.7 → 368.8 kt.
+- `registered_vehicles`' feature importance changed from 11.7% (least
+  important of the three) to 40.0% (most important) -- with real
+  year-to-year variation, it's now a genuinely informative predictor,
+  not a constant a model could only exploit as an implicit per-state
+  indicator.
+
+### Verified
+
+- 24 tests, full pipeline, and dashboard rebuild all pass clean.
+- Confirmed real per-year variation directly (NSW: 4.68M in 2010 →
+  6.16M in 2023, matching real fleet growth), not just "the code ran."
+- Re-screenshotted the dashboard's "Registered vehicles" chart post-fix
+  -- smooth real growth curves, not flat lines.

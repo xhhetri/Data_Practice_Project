@@ -401,9 +401,11 @@ function renderMainChart(){
   const info = METRIC_LABELS[currentMetric];
   document.getElementById("chart-title").textContent = info.title;
   document.getElementById("chart-note").textContent =
-    info.table === "per_capita"
-      ? "Per-capita views use ABS population estimates alongside the same underlying data."
-      : "Click a state's checkbox to show/hide it, or its color dot to recolor its line.";
+    info.note
+      ? info.note
+      : info.table === "per_capita"
+        ? "Per-capita views use ABS population estimates alongside the same underlying data."
+        : "Click a state's checkbox to show/hide it, or its color dot to recolor its line.";
 
   const traces = [];
   DATA.meta.states.forEach(state => {
