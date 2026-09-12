@@ -1,0 +1,1433 @@
+state,year,quarter,population
+New South Wales,1981,Q2,5234889
+Victoria,1981,Q2,3946917
+Queensland,1981,Q2,2345208
+South Australia,1981,Q2,1318769
+Western Australia,1981,Q2,1300056
+Tasmania,1981,Q2,427224
+Northern Territory,1981,Q2,122616
+Australian Capital Territory,1981,Q2,227581
+New South Wales,1981,Q3,5249455
+Victoria,1981,Q3,3957333
+Queensland,1981,Q3,2367477
+South Australia,1981,Q3,1321235
+Western Australia,1981,Q3,1311284
+Tasmania,1981,Q3,427925
+Northern Territory,1981,Q3,125186
+Australian Capital Territory,1981,Q3,228782
+New South Wales,1981,Q4,5266894
+Victoria,1981,Q4,3968398
+Queensland,1981,Q4,2387943
+South Australia,1981,Q4,1325176
+Western Australia,1981,Q4,1320221
+Tasmania,1981,Q4,428283
+Northern Territory,1981,Q4,127718
+Australian Capital Territory,1981,Q4,229484
+New South Wales,1982,Q1,5286119
+Victoria,1982,Q1,3980826
+Queensland,1982,Q1,2406355
+South Australia,1982,Q1,1328670
+Western Australia,1982,Q1,1329700
+Tasmania,1982,Q1,429445
+Northern Territory,1982,Q1,129593
+Australian Capital Territory,1982,Q1,230990
+New South Wales,1982,Q2,5303580
+Victoria,1982,Q2,3992870
+Queensland,1982,Q2,2424586
+South Australia,1982,Q2,1331108
+Western Australia,1982,Q2,1338899
+Tasmania,1982,Q2,429845
+Northern Territory,1982,Q2,130314
+Australian Capital Territory,1982,Q2,233045
+New South Wales,1982,Q3,5315846
+Victoria,1982,Q3,4002731
+Queensland,1982,Q3,2442912
+South Australia,1982,Q3,1334090
+Western Australia,1982,Q3,1348096
+Tasmania,1982,Q3,430308
+Northern Territory,1982,Q3,131517
+Australian Capital Territory,1982,Q3,233778
+New South Wales,1982,Q4,5328221
+Victoria,1982,Q4,4012687
+Queensland,1982,Q4,2456475
+South Australia,1982,Q4,1337783
+Western Australia,1982,Q4,1354971
+Tasmania,1982,Q4,430974
+Northern Territory,1982,Q4,132784
+Australian Capital Territory,1982,Q4,234996
+New South Wales,1983,Q1,5344027
+Victoria,1983,Q1,4025254
+Queensland,1983,Q1,2469709
+South Australia,1983,Q1,1342193
+Western Australia,1983,Q1,1361874
+Tasmania,1983,Q1,431665
+Northern Territory,1983,Q1,134529
+Australian Capital Territory,1983,Q1,236991
+New South Wales,1983,Q2,5352959
+Victoria,1983,Q2,4035702
+Queensland,1983,Q2,2482282
+South Australia,1983,Q2,1345775
+Western Australia,1983,Q2,1369050
+Tasmania,1983,Q2,432805
+Northern Territory,1983,Q2,135916
+Australian Capital Territory,1983,Q2,238983
+New South Wales,1983,Q3,5363744
+Victoria,1983,Q3,4045185
+Queensland,1983,Q3,2493373
+South Australia,1983,Q3,1349553
+Western Australia,1983,Q3,1375244
+Tasmania,1983,Q3,433909
+Northern Territory,1983,Q3,137942
+Australian Capital Territory,1983,Q3,240055
+New South Wales,1983,Q4,5374915
+Victoria,1983,Q4,4054498
+Queensland,1983,Q4,2503285
+South Australia,1983,Q4,1353208
+Western Australia,1983,Q4,1381011
+Tasmania,1983,Q4,435100
+Northern Territory,1983,Q4,139519
+Australian Capital Territory,1983,Q4,241960
+New South Wales,1984,Q1,5389180
+Victoria,1984,Q1,4066209
+Queensland,1984,Q1,2513443
+South Australia,1984,Q1,1356511
+Western Australia,1984,Q1,1385878
+Tasmania,1984,Q1,436178
+Northern Territory,1984,Q1,140666
+Australian Capital Territory,1984,Q1,243476
+New South Wales,1984,Q2,5402729
+Victoria,1984,Q2,4076492
+Queensland,1984,Q2,2523859
+South Australia,1984,Q2,1360048
+Western Australia,1984,Q2,1391237
+Tasmania,1984,Q2,437760
+Northern Territory,1984,Q2,142154
+Australian Capital Territory,1984,Q2,245112
+New South Wales,1984,Q3,5416536
+Victoria,1984,Q3,4086549
+Queensland,1984,Q3,2535976
+South Australia,1984,Q3,1362611
+Western Australia,1984,Q3,1397817
+Tasmania,1984,Q3,438866
+Northern Territory,1984,Q3,143934
+Australian Capital Territory,1984,Q3,246259
+New South Wales,1984,Q4,5431752
+Victoria,1984,Q4,4097640
+Queensland,1984,Q4,2547078
+South Australia,1984,Q4,1365333
+Western Australia,1984,Q4,1403032
+Tasmania,1984,Q4,440070
+Northern Territory,1984,Q4,145293
+Australian Capital Territory,1984,Q4,247084
+New South Wales,1985,Q1,5451549
+Victoria,1985,Q1,4109741
+Queensland,1985,Q1,2559452
+South Australia,1985,Q1,1368721
+Western Australia,1985,Q1,1410377
+Tasmania,1985,Q1,441324
+Northern Territory,1985,Q1,146662
+Australian Capital Territory,1985,Q1,248839
+New South Wales,1985,Q2,5464512
+Victoria,1985,Q2,4120068
+Queensland,1985,Q2,2571218
+South Australia,1985,Q2,1371197
+Western Australia,1985,Q2,1418564
+Tasmania,1985,Q2,442828
+Northern Territory,1985,Q2,148536
+Australian Capital Territory,1985,Q2,251389
+New South Wales,1985,Q3,5478254
+Victoria,1985,Q3,4129796
+Queensland,1985,Q3,2583368
+South Australia,1985,Q3,1373324
+Western Australia,1985,Q3,1427370
+Tasmania,1985,Q3,443548
+Northern Territory,1985,Q3,150596
+Australian Capital Territory,1985,Q3,253446
+New South Wales,1985,Q4,5496467
+Victoria,1985,Q4,4140421
+Queensland,1985,Q4,2597100
+South Australia,1985,Q4,1376838
+Western Australia,1985,Q4,1436900
+Tasmania,1985,Q4,444576
+Northern Territory,1985,Q4,152356
+Australian Capital Territory,1985,Q4,255908
+New South Wales,1986,Q1,5516377
+Victoria,1986,Q1,4151053
+Queensland,1986,Q1,2610205
+South Australia,1986,Q1,1380317
+Western Australia,1986,Q1,1447254
+Tasmania,1986,Q1,445723
+Northern Territory,1986,Q1,153284
+Australian Capital Territory,1986,Q1,257285
+New South Wales,1986,Q2,5531526
+Victoria,1986,Q2,4160856
+Queensland,1986,Q2,2624595
+South Australia,1986,Q2,1382550
+Western Australia,1986,Q2,1459019
+Tasmania,1986,Q2,446473
+Northern Territory,1986,Q2,154421
+Australian Capital Territory,1986,Q2,258910
+New South Wales,1986,Q3,5549928
+Victoria,1986,Q3,4171942
+Queensland,1986,Q3,2636477
+South Australia,1986,Q3,1384840
+Western Australia,1986,Q3,1468413
+Tasmania,1986,Q3,447325
+Northern Territory,1986,Q3,155571
+Australian Capital Territory,1986,Q3,260545
+New South Wales,1986,Q4,5574251
+Victoria,1986,Q4,4183842
+Queensland,1986,Q4,2648778
+South Australia,1986,Q4,1387499
+Western Australia,1986,Q4,1477398
+Tasmania,1986,Q4,448235
+Northern Territory,1986,Q4,156578
+Australian Capital Territory,1986,Q4,262188
+New South Wales,1987,Q1,5596207
+Victoria,1987,Q1,4197414
+Queensland,1987,Q1,2662654
+South Australia,1987,Q1,1390436
+Western Australia,1987,Q1,1486905
+Tasmania,1987,Q1,448597
+Northern Territory,1987,Q1,157775
+Australian Capital Territory,1987,Q1,264053
+New South Wales,1987,Q2,5616736
+Victoria,1987,Q2,4210111
+Queensland,1987,Q2,2675107
+South Australia,1987,Q2,1392764
+Western Australia,1987,Q2,1496248
+Tasmania,1987,Q2,449226
+Northern Territory,1987,Q2,158205
+Australian Capital Territory,1987,Q2,265477
+New South Wales,1987,Q3,5639899
+Victoria,1987,Q3,4223707
+Queensland,1987,Q3,2688129
+South Australia,1987,Q3,1395947
+Western Australia,1987,Q3,1505294
+Tasmania,1987,Q3,449373
+Northern Territory,1987,Q3,159142
+Australian Capital Territory,1987,Q3,267375
+New South Wales,1987,Q4,5666219
+Victoria,1987,Q4,4234945
+Queensland,1987,Q4,2703516
+South Australia,1987,Q4,1398959
+Western Australia,1987,Q4,1513355
+Tasmania,1987,Q4,449820
+Northern Territory,1987,Q4,159040
+Australian Capital Territory,1987,Q4,268787
+New South Wales,1988,Q1,5689397
+Victoria,1988,Q1,4249985
+Queensland,1988,Q1,2723992
+South Australia,1988,Q1,1402329
+Western Australia,1988,Q1,1525576
+Tasmania,1988,Q1,450572
+Northern Territory,1988,Q1,158959
+Australian Capital Territory,1988,Q1,270957
+New South Wales,1988,Q2,5707309
+Victoria,1988,Q2,4262569
+Queensland,1988,Q2,2739907
+South Australia,1988,Q2,1404909
+Western Australia,1988,Q2,1535167
+Tasmania,1988,Q2,451148
+Northern Territory,1988,Q2,159026
+Australian Capital Territory,1988,Q2,272129
+New South Wales,1988,Q3,5730331
+Victoria,1988,Q3,4280376
+Queensland,1988,Q3,2760389
+South Australia,1988,Q3,1408705
+Western Australia,1988,Q3,1548042
+Tasmania,1988,Q3,451905
+Northern Territory,1988,Q3,159804
+Australian Capital Territory,1988,Q3,273087
+New South Wales,1988,Q4,5752254
+Victoria,1988,Q4,4295300
+Queensland,1988,Q4,2780869
+South Australia,1988,Q4,1412323
+Western Australia,1988,Q4,1558914
+Tasmania,1988,Q4,452781
+Northern Territory,1988,Q4,160536
+Australian Capital Territory,1988,Q4,274105
+New South Wales,1989,Q1,5769720
+Victoria,1989,Q1,4309978
+Queensland,1989,Q1,2806845
+South Australia,1989,Q1,1416938
+Western Australia,1989,Q1,1569712
+Tasmania,1989,Q1,453932
+Northern Territory,1989,Q1,161050
+Australian Capital Territory,1989,Q1,275867
+New South Wales,1989,Q2,5776283
+Victoria,1989,Q2,4320164
+Queensland,1989,Q2,2827637
+South Australia,1989,Q2,1419029
+Western Australia,1989,Q2,1578434
+Tasmania,1989,Q2,455258
+Northern Territory,1989,Q2,161179
+Australian Capital Territory,1989,Q2,276432
+New South Wales,1989,Q3,5785625
+Victoria,1989,Q3,4333537
+Queensland,1989,Q3,2847045
+South Australia,1989,Q3,1421671
+Western Australia,1989,Q3,1588186
+Tasmania,1989,Q3,456830
+Northern Territory,1989,Q3,161674
+Australian Capital Territory,1989,Q3,277470
+New South Wales,1989,Q4,5803079
+Victoria,1989,Q4,4348225
+Queensland,1989,Q4,2864007
+South Australia,1989,Q4,1425461
+Western Australia,1989,Q4,1596225
+Tasmania,1989,Q4,458410
+Northern Territory,1989,Q4,162097
+Australian Capital Territory,1989,Q4,279219
+New South Wales,1990,Q1,5818151
+Victoria,1990,Q1,4364548
+Queensland,1990,Q1,2884170
+South Australia,1990,Q1,1429541
+Western Australia,1990,Q1,1605959
+Tasmania,1990,Q1,460070
+Northern Territory,1990,Q1,162538
+Australian Capital Territory,1990,Q1,280659
+New South Wales,1990,Q2,5834021
+Victoria,1990,Q2,4378592
+Queensland,1990,Q2,2899283
+South Australia,1990,Q2,1432056
+Western Australia,1990,Q2,1613049
+Tasmania,1990,Q2,462188
+Northern Territory,1990,Q2,163728
+Australian Capital Territory,1990,Q2,282211
+New South Wales,1990,Q3,5849534
+Victoria,1990,Q3,4391183
+Queensland,1990,Q3,2913538
+South Australia,1990,Q3,1435497
+Western Australia,1990,Q3,1619848
+Tasmania,1990,Q3,463469
+Northern Territory,1990,Q3,164392
+Australian Capital Territory,1990,Q3,283671
+New South Wales,1990,Q4,5862497
+Victoria,1990,Q4,4400707
+Queensland,1990,Q4,2928713
+South Australia,1990,Q4,1438882
+Western Australia,1990,Q4,1624390
+Tasmania,1990,Q4,464520
+Northern Territory,1990,Q4,165047
+Australian Capital Territory,1990,Q4,285012
+New South Wales,1991,Q1,5883248
+Victoria,1991,Q1,4413410
+Queensland,1991,Q1,2947512
+South Australia,1991,Q1,1443371
+Western Australia,1991,Q1,1631357
+Tasmania,1991,Q1,465870
+Northern Territory,1991,Q1,165356
+Australian Capital Territory,1991,Q1,287300
+New South Wales,1991,Q2,5898731
+Victoria,1991,Q2,4420373
+Queensland,1991,Q2,2960951
+South Australia,1991,Q2,1446299
+Western Australia,1991,Q2,1636067
+Tasmania,1991,Q2,466802
+Northern Territory,1991,Q2,165493
+Australian Capital Territory,1991,Q2,289320
+New South Wales,1991,Q3,5916714
+Victoria,1991,Q3,4429409
+Queensland,1991,Q3,2975984
+South Australia,1991,Q3,1449037
+Western Australia,1991,Q3,1642746
+Tasmania,1991,Q3,467736
+Northern Territory,1991,Q3,166716
+Australian Capital Territory,1991,Q3,290517
+New South Wales,1991,Q4,5928072
+Victoria,1991,Q4,4435083
+Queensland,1991,Q4,2990441
+South Australia,1991,Q4,1450862
+Western Australia,1991,Q4,1647408
+Tasmania,1991,Q4,468549
+Northern Territory,1991,Q4,167043
+Australian Capital Territory,1991,Q4,291523
+New South Wales,1992,Q1,5946386
+Victoria,1992,Q1,4445141
+Queensland,1992,Q1,3010322
+South Australia,1992,Q1,1454160
+Western Australia,1992,Q1,1654244
+Tasmania,1992,Q1,469433
+Northern Territory,1992,Q1,168117
+Australian Capital Territory,1992,Q1,293484
+New South Wales,1992,Q2,5957822
+Victoria,1992,Q2,4450217
+Queensland,1992,Q2,3023198
+South Australia,1992,Q2,1455442
+Western Australia,1992,Q2,1658544
+Tasmania,1992,Q2,469979
+Northern Territory,1992,Q2,168546
+Australian Capital Territory,1992,Q2,294887
+New South Wales,1992,Q3,5970754
+Victoria,1992,Q3,4454836
+Queensland,1992,Q3,3041149
+South Australia,1992,Q3,1456178
+Western Australia,1992,Q3,1664755
+Tasmania,1992,Q3,470443
+Northern Territory,1992,Q3,169101
+Australian Capital Territory,1992,Q3,296087
+New South Wales,1992,Q4,5977823
+Victoria,1992,Q4,4458219
+Queensland,1992,Q4,3057138
+South Australia,1992,Q4,1457241
+Western Australia,1992,Q4,1668515
+Tasmania,1992,Q4,471258
+Northern Territory,1992,Q4,170420
+Australian Capital Territory,1992,Q4,296519
+New South Wales,1993,Q1,5990424
+Victoria,1993,Q1,4463265
+Queensland,1993,Q1,3081331
+South Australia,1993,Q1,1457895
+Western Australia,1993,Q1,1674250
+Tasmania,1993,Q1,471864
+Northern Territory,1993,Q1,171319
+Australian Capital Territory,1993,Q1,299204
+New South Wales,1993,Q2,5995055
+Victoria,1993,Q2,4462766
+Queensland,1993,Q2,3096185
+South Australia,1993,Q2,1458632
+Western Australia,1993,Q2,1678722
+Tasmania,1993,Q2,471987
+Northern Territory,1993,Q2,171708
+Australian Capital Territory,1993,Q2,299753
+New South Wales,1993,Q3,6009659
+Victoria,1993,Q3,4464794
+Queensland,1993,Q3,3115843
+South Australia,1993,Q3,1460306
+Western Australia,1993,Q3,1684972
+Tasmania,1993,Q3,472574
+Northern Territory,1993,Q3,172884
+Australian Capital Territory,1993,Q3,300030
+New South Wales,1993,Q4,6020171
+Victoria,1993,Q4,4466738
+Queensland,1993,Q4,3130986
+South Australia,1993,Q4,1461102
+Western Australia,1993,Q4,1690348
+Tasmania,1993,Q4,472983
+Northern Territory,1993,Q4,173590
+Australian Capital Territory,1993,Q4,300490
+New South Wales,1994,Q1,6037096
+Victoria,1994,Q1,4471010
+Queensland,1994,Q1,3151365
+South Australia,1994,Q1,1462557
+Western Australia,1994,Q1,1698534
+Tasmania,1994,Q1,473143
+Northern Territory,1994,Q1,174237
+Australian Capital Territory,1994,Q1,301413
+New South Wales,1994,Q2,6044819
+Victoria,1994,Q2,4472989
+Queensland,1994,Q2,3166566
+South Australia,1994,Q2,1463089
+Western Australia,1994,Q2,1704649
+Tasmania,1994,Q2,473499
+Northern Territory,1994,Q2,174908
+Australian Capital Territory,1994,Q2,302194
+New South Wales,1994,Q3,6063058
+Victoria,1994,Q3,4479378
+Queensland,1994,Q3,3184148
+South Australia,1994,Q3,1463714
+Western Australia,1994,Q3,1713520
+Tasmania,1994,Q3,473972
+Northern Territory,1994,Q3,175543
+Australian Capital Territory,1994,Q3,303134
+New South Wales,1994,Q4,6071872
+Victoria,1994,Q4,4483205
+Queensland,1994,Q4,3198877
+South Australia,1994,Q4,1463977
+Western Australia,1994,Q4,1718549
+Tasmania,1994,Q4,474076
+Northern Territory,1994,Q4,176761
+Australian Capital Territory,1994,Q4,303289
+New South Wales,1995,Q1,6087910
+Victoria,1995,Q1,4491289
+Queensland,1995,Q1,3218314
+South Australia,1995,Q1,1464763
+Western Australia,1995,Q1,1727907
+Tasmania,1995,Q1,474411
+Northern Territory,1995,Q1,178692
+Australian Capital Territory,1995,Q1,305388
+New South Wales,1995,Q2,6105560
+Victoria,1995,Q2,4497660
+Queensland,1995,Q2,3237380
+South Australia,1995,Q2,1465340
+Western Australia,1995,Q2,1736066
+Tasmania,1995,Q2,474515
+Northern Territory,1995,Q2,179602
+Australian Capital Territory,1995,Q2,305838
+New South Wales,1995,Q3,6124648
+Victoria,1995,Q3,4506386
+Queensland,1995,Q3,3255117
+South Australia,1995,Q3,1465759
+Western Australia,1995,Q3,1744788
+Tasmania,1995,Q3,474941
+Northern Territory,1995,Q3,180698
+Australian Capital Territory,1995,Q3,306880
+New South Wales,1995,Q4,6143971
+Victoria,1995,Q4,4517353
+Queensland,1995,Q4,3271743
+South Australia,1995,Q4,1466605
+Western Australia,1995,Q4,1751933
+Tasmania,1995,Q4,475148
+Northern Territory,1995,Q4,182829
+Australian Capital Territory,1995,Q4,307022
+New South Wales,1996,Q1,6159806
+Victoria,1996,Q1,4527573
+Queensland,1996,Q1,3289507
+South Australia,1996,Q1,1467943
+Western Australia,1996,Q1,1760445
+Tasmania,1996,Q1,475282
+Northern Territory,1996,Q1,183859
+Australian Capital Territory,1996,Q1,308512
+New South Wales,1996,Q2,6176461
+Victoria,1996,Q2,4534984
+Queensland,1996,Q2,3303192
+South Australia,1996,Q2,1469079
+Western Australia,1996,Q2,1768206
+Tasmania,1996,Q2,475605
+Northern Territory,1996,Q2,184516
+Australian Capital Territory,1996,Q2,309629
+New South Wales,1996,Q3,6196251
+Victoria,1996,Q3,4544480
+Queensland,1996,Q3,3318599
+South Australia,1996,Q3,1470334
+Western Australia,1996,Q3,1776454
+Tasmania,1996,Q3,475731
+Northern Territory,1996,Q3,186229
+Australian Capital Territory,1996,Q3,310227
+New South Wales,1996,Q4,6214548
+Victoria,1996,Q4,4552904
+Queensland,1996,Q4,3330579
+South Australia,1996,Q4,1471997
+Western Australia,1996,Q4,1783556
+Tasmania,1996,Q4,475529
+Northern Territory,1996,Q4,187342
+Australian Capital Territory,1996,Q4,310655
+New South Wales,1997,Q1,6234303
+Victoria,1997,Q1,4565356
+Queensland,1997,Q1,3343777
+South Australia,1997,Q1,1474442
+Western Australia,1997,Q1,1793345
+Tasmania,1997,Q1,475444
+Northern Territory,1997,Q1,188223
+Australian Capital Territory,1997,Q1,310910
+New South Wales,1997,Q2,6246267
+Victoria,1997,Q2,4569297
+Queensland,1997,Q2,3355417
+South Australia,1997,Q2,1475658
+Western Australia,1997,Q2,1798341
+Tasmania,1997,Q2,474908
+Northern Territory,1997,Q2,189755
+Australian Capital Territory,1997,Q2,310533
+New South Wales,1997,Q3,6260867
+Victoria,1997,Q3,4578175
+Queensland,1997,Q3,3369184
+South Australia,1997,Q3,1477371
+Western Australia,1997,Q3,1804800
+Tasmania,1997,Q3,474528
+Northern Territory,1997,Q3,190694
+Australian Capital Territory,1997,Q3,310258
+New South Wales,1997,Q4,6274966
+Victoria,1997,Q4,4586156
+Queensland,1997,Q4,3380394
+South Australia,1997,Q4,1479003
+Western Australia,1997,Q4,1810928
+Tasmania,1997,Q4,474215
+Northern Territory,1997,Q4,191259
+Australian Capital Territory,1997,Q4,310281
+New South Wales,1998,Q1,6295260
+Victoria,1998,Q1,4600872
+Queensland,1998,Q1,3393483
+South Australia,1998,Q1,1482137
+Western Australia,1998,Q1,1820812
+Tasmania,1998,Q1,473982
+Northern Territory,1998,Q1,192061
+Australian Capital Territory,1998,Q1,311026
+New South Wales,1998,Q2,6305799
+Victoria,1998,Q2,4606970
+Queensland,1998,Q2,3404484
+South Australia,1998,Q2,1483270
+Western Australia,1998,Q2,1826440
+Tasmania,1998,Q2,473430
+Northern Territory,1998,Q2,192905
+Australian Capital Territory,1998,Q2,311532
+New South Wales,1998,Q3,6324111
+Victoria,1998,Q3,4617308
+Queensland,1998,Q3,3416076
+South Australia,1998,Q3,1484580
+Western Australia,1998,Q3,1834703
+Tasmania,1998,Q3,473430
+Northern Territory,1998,Q3,193703
+Australian Capital Territory,1998,Q3,311732
+New South Wales,1998,Q4,6338790
+Victoria,1998,Q4,4629345
+Queensland,1998,Q4,3427505
+South Australia,1998,Q4,1487042
+Western Australia,1998,Q4,1840078
+Tasmania,1998,Q4,473450
+Northern Territory,1998,Q4,194390
+Australian Capital Territory,1998,Q4,312300
+New South Wales,1999,Q1,6360552
+Victoria,1999,Q1,4645152
+Queensland,1999,Q1,3442196
+South Australia,1999,Q1,1489729
+Western Australia,1999,Q1,1848303
+Tasmania,1999,Q1,473189
+Northern Territory,1999,Q1,195251
+Australian Capital Territory,1999,Q1,313466
+New South Wales,1999,Q2,6375103
+Victoria,1999,Q2,4652462
+Queensland,1999,Q2,3453936
+South Australia,1999,Q2,1490934
+Western Australia,1999,Q2,1853936
+Tasmania,1999,Q2,473030
+Northern Territory,1999,Q2,196012
+Australian Capital Territory,1999,Q2,314171
+New South Wales,1999,Q3,6393100
+Victoria,1999,Q3,4665626
+Queensland,1999,Q3,3466399
+South Australia,1999,Q3,1493030
+Western Australia,1999,Q3,1862033
+Tasmania,1999,Q3,473181
+Northern Territory,1999,Q3,196807
+Australian Capital Territory,1999,Q3,314833
+New South Wales,1999,Q4,6409971
+Victoria,1999,Q4,4677581
+Queensland,1999,Q4,3481034
+South Australia,1999,Q4,1495218
+Western Australia,1999,Q4,1866265
+Tasmania,1999,Q4,473294
+Northern Territory,1999,Q4,197757
+Australian Capital Territory,1999,Q4,315431
+New South Wales,2000,Q1,6431826
+Victoria,2000,Q1,4695560
+Queensland,2000,Q1,3497147
+South Australia,2000,Q1,1496828
+Western Australia,2000,Q1,1874371
+Tasmania,2000,Q1,473303
+Northern Territory,2000,Q1,198304
+Australian Capital Territory,2000,Q1,316731
+New South Wales,2000,Q2,6446558
+Victoria,2000,Q2,4704065
+Queensland,2000,Q2,3509458
+South Australia,2000,Q2,1497503
+Western Australia,2000,Q2,1879093
+Tasmania,2000,Q2,473123
+Northern Territory,2000,Q2,199149
+Australian Capital Territory,2000,Q2,317235
+New South Wales,2000,Q3,6465614
+Victoria,2000,Q3,4718436
+Queensland,2000,Q3,3523446
+South Australia,2000,Q3,1498934
+Western Australia,2000,Q3,1886084
+Tasmania,2000,Q3,473035
+Northern Territory,2000,Q3,199816
+Australian Capital Territory,2000,Q3,318079
+New South Wales,2000,Q4,6485081
+Victoria,2000,Q4,4730855
+Queensland,2000,Q4,3537670
+South Australia,2000,Q4,1500129
+Western Australia,2000,Q4,1892531
+Tasmania,2000,Q4,473200
+Northern Territory,2000,Q4,200045
+Australian Capital Territory,2000,Q4,318941
+New South Wales,2001,Q1,6513844
+Victoria,2001,Q1,4753725
+Queensland,2001,Q1,3556466
+South Australia,2001,Q1,1502299
+Western Australia,2001,Q1,1901295
+Tasmania,2001,Q1,473662
+Northern Territory,2001,Q1,200789
+Australian Capital Territory,2001,Q1,320526
+New South Wales,2001,Q2,6530349
+Victoria,2001,Q2,4763615
+Queensland,2001,Q2,3571469
+South Australia,2001,Q2,1503461
+Western Australia,2001,Q2,1906274
+Tasmania,2001,Q2,473668
+Northern Territory,2001,Q2,201743
+Australian Capital Territory,2001,Q2,321538
+New South Wales,2001,Q3,6544891
+Victoria,2001,Q3,4776052
+Queensland,2001,Q3,3590969
+South Australia,2001,Q3,1504992
+Western Australia,2001,Q3,1912214
+Tasmania,2001,Q3,473530
+Northern Territory,2001,Q3,201995
+Australian Capital Territory,2001,Q3,321942
+New South Wales,2001,Q4,6558484
+Victoria,2001,Q4,4790212
+Queensland,2001,Q4,3611203
+South Australia,2001,Q4,1507825
+Western Australia,2001,Q4,1917752
+Tasmania,2001,Q4,473890
+Northern Territory,2001,Q4,201751
+Australian Capital Territory,2001,Q4,322874
+New South Wales,2002,Q1,6575296
+Victoria,2002,Q1,4808940
+Queensland,2002,Q1,3631451
+South Australia,2002,Q1,1510013
+Western Australia,2002,Q1,1924935
+Tasmania,2002,Q1,474218
+Northern Territory,2002,Q1,201880
+Australian Capital Territory,2002,Q1,324187
+New South Wales,2002,Q2,6580807
+Victoria,2002,Q2,4817774
+Queensland,2002,Q2,3653123
+South Australia,2002,Q2,1511567
+Western Australia,2002,Q2,1928512
+Tasmania,2002,Q2,474152
+Northern Territory,2002,Q2,202251
+Australian Capital Territory,2002,Q2,324627
+New South Wales,2002,Q3,6590659
+Victoria,2002,Q3,4830383
+Queensland,2002,Q3,3676870
+South Australia,2002,Q3,1513662
+Western Australia,2002,Q3,1932977
+Tasmania,2002,Q3,474626
+Northern Territory,2002,Q3,202069
+Australian Capital Territory,2002,Q3,325255
+New South Wales,2002,Q4,6599441
+Victoria,2002,Q4,4845024
+Queensland,2002,Q4,3700791
+South Australia,2002,Q4,1515723
+Western Australia,2002,Q4,1938610
+Tasmania,2002,Q4,475998
+Northern Territory,2002,Q4,201549
+Australian Capital Territory,2002,Q4,325950
+New South Wales,2003,Q1,6615712
+Victoria,2003,Q1,4864214
+Queensland,2003,Q1,3723239
+South Australia,2003,Q1,1518570
+Western Australia,2003,Q1,1946831
+Tasmania,2003,Q1,477576
+Northern Territory,2003,Q1,201068
+Australian Capital Territory,2003,Q1,327083
+New South Wales,2003,Q2,6620715
+Victoria,2003,Q2,4873809
+Queensland,2003,Q2,3743121
+South Australia,2003,Q2,1520399
+Western Australia,2003,Q2,1952741
+Tasmania,2003,Q2,478534
+Northern Territory,2003,Q2,201725
+Australian Capital Territory,2003,Q2,327357
+New South Wales,2003,Q3,6627538
+Victoria,2003,Q3,4887826
+Queensland,2003,Q3,3765109
+South Australia,2003,Q3,1522193
+Western Australia,2003,Q3,1959430
+Tasmania,2003,Q3,479829
+Northern Territory,2003,Q3,201781
+Australian Capital Territory,2003,Q3,327387
+New South Wales,2003,Q4,6634509
+Victoria,2003,Q4,4900176
+Queensland,2003,Q4,3788560
+South Australia,2003,Q4,1524727
+Western Australia,2003,Q4,1966130
+Tasmania,2003,Q4,481411
+Northern Territory,2003,Q4,201708
+Australian Capital Territory,2003,Q4,327596
+New South Wales,2004,Q1,6648280
+Victoria,2004,Q1,4918070
+Queensland,2004,Q1,3810921
+South Australia,2004,Q1,1526994
+Western Australia,2004,Q1,1974145
+Tasmania,2004,Q1,482778
+Northern Territory,2004,Q1,202009
+Australian Capital Territory,2004,Q1,328560
+New South Wales,2004,Q2,6650735
+Victoria,2004,Q2,4927149
+Queensland,2004,Q2,3829970
+South Australia,2004,Q2,1528189
+Western Australia,2004,Q2,1979542
+Tasmania,2004,Q2,483178
+Northern Territory,2004,Q2,202663
+Australian Capital Territory,2004,Q2,328940
+New South Wales,2004,Q3,6660416
+Victoria,2004,Q3,4943359
+Queensland,2004,Q3,3849852
+South Australia,2004,Q3,1530521
+Western Australia,2004,Q3,1986513
+Tasmania,2004,Q3,483995
+Northern Territory,2004,Q3,203527
+Australian Capital Territory,2004,Q3,329131
+New South Wales,2004,Q4,6669206
+Victoria,2004,Q4,4957147
+Queensland,2004,Q4,3872351
+South Australia,2004,Q4,1532562
+Western Australia,2004,Q4,1994241
+Tasmania,2004,Q4,484778
+Northern Territory,2004,Q4,203857
+Australian Capital Territory,2004,Q4,329498
+New South Wales,2005,Q1,6685875
+Victoria,2005,Q1,4978342
+Queensland,2005,Q1,3896951
+South Australia,2005,Q1,1536798
+Western Australia,2005,Q1,2004644
+Tasmania,2005,Q1,485755
+Northern Territory,2005,Q1,204897
+Australian Capital Territory,2005,Q1,330916
+New South Wales,2005,Q2,6693206
+Victoria,2005,Q2,4989246
+Queensland,2005,Q2,3918494
+South Australia,2005,Q2,1538804
+Western Australia,2005,Q2,2011207
+Tasmania,2005,Q2,486202
+Northern Territory,2005,Q2,205905
+Australian Capital Territory,2005,Q2,331399
+New South Wales,2005,Q3,6707429
+Victoria,2005,Q3,5006241
+Queensland,2005,Q3,3940494
+South Australia,2005,Q3,1542004
+Western Australia,2005,Q3,2020359
+Tasmania,2005,Q3,486893
+Northern Territory,2005,Q3,206759
+Australian Capital Territory,2005,Q3,332177
+New South Wales,2005,Q4,6718023
+Victoria,2005,Q4,5023203
+Queensland,2005,Q4,3964175
+South Australia,2005,Q4,1544852
+Western Australia,2005,Q4,2029936
+Tasmania,2005,Q4,488098
+Northern Territory,2005,Q4,207385
+Australian Capital Territory,2005,Q4,333505
+New South Wales,2006,Q1,6735528
+Victoria,2006,Q1,5048207
+Queensland,2006,Q1,3987653
+South Australia,2006,Q1,1550135
+Western Australia,2006,Q1,2042450
+Tasmania,2006,Q1,489140
+Northern Territory,2006,Q1,208347
+Australian Capital Territory,2006,Q1,334299
+New South Wales,2006,Q2,6742690
+Victoria,2006,Q2,5061266
+Queensland,2006,Q2,4007992
+South Australia,2006,Q2,1552529
+Western Australia,2006,Q2,2050581
+Tasmania,2006,Q2,489302
+Northern Territory,2006,Q2,209057
+Australian Capital Territory,2006,Q2,335170
+New South Wales,2006,Q3,6766133
+Victoria,2006,Q3,5083593
+Queensland,2006,Q3,4031580
+South Australia,2006,Q3,1557332
+Western Australia,2006,Q3,2064032
+Tasmania,2006,Q3,490354
+Northern Territory,2006,Q3,210284
+Australian Capital Territory,2006,Q3,336547
+New South Wales,2006,Q4,6786160
+Victoria,2006,Q4,5103965
+Queensland,2006,Q4,4055845
+South Australia,2006,Q4,1561300
+Western Australia,2006,Q4,2076867
+Tasmania,2006,Q4,491515
+Northern Territory,2006,Q4,211029
+Australian Capital Territory,2006,Q4,338381
+New South Wales,2007,Q1,6815359
+Victoria,2007,Q1,5134074
+Queensland,2007,Q1,4084531
+South Australia,2007,Q1,1567206
+Western Australia,2007,Q1,2093633
+Tasmania,2007,Q1,492625
+Northern Territory,2007,Q1,212372
+Australian Capital Territory,2007,Q1,340544
+New South Wales,2007,Q2,6834156
+Victoria,2007,Q2,5153522
+Queensland,2007,Q2,4111018
+South Australia,2007,Q2,1570619
+Western Australia,2007,Q2,2106139
+Tasmania,2007,Q2,493262
+Northern Territory,2007,Q2,213748
+Australian Capital Territory,2007,Q2,342644
+New South Wales,2007,Q3,6859736
+Victoria,2007,Q3,5178515
+Queensland,2007,Q3,4134958
+South Australia,2007,Q3,1574537
+Western Australia,2007,Q3,2120776
+Tasmania,2007,Q3,494547
+Northern Territory,2007,Q3,215180
+Australian Capital Territory,2007,Q3,343341
+New South Wales,2007,Q4,6883852
+Victoria,2007,Q4,5199503
+Queensland,2007,Q4,4159990
+South Australia,2007,Q4,1578489
+Western Australia,2007,Q4,2135006
+Tasmania,2007,Q4,495858
+Northern Territory,2007,Q4,216618
+Australian Capital Territory,2007,Q4,344176
+New South Wales,2008,Q1,6919907
+Victoria,2008,Q1,5233000
+Queensland,2008,Q1,4191479
+South Australia,2008,Q1,1584408
+Western Australia,2008,Q1,2155552
+Tasmania,2008,Q1,497552
+Northern Territory,2008,Q1,217912
+Australian Capital Territory,2008,Q1,346477
+New South Wales,2008,Q2,6943461
+Victoria,2008,Q2,5256375
+Queensland,2008,Q2,4219505
+South Australia,2008,Q2,1588665
+Western Australia,2008,Q2,2171700
+Tasmania,2008,Q2,498568
+Northern Territory,2008,Q2,219874
+Australian Capital Territory,2008,Q2,348368
+New South Wales,2008,Q3,6972395
+Victoria,2008,Q3,5286549
+Queensland,2008,Q3,4247991
+South Australia,2008,Q3,1593725
+Western Australia,2008,Q3,2191582
+Tasmania,2008,Q3,500062
+Northern Territory,2008,Q3,221464
+Australian Capital Territory,2008,Q3,349543
+New South Wales,2008,Q4,7001782
+Victoria,2008,Q4,5313285
+Queensland,2008,Q4,4275551
+South Australia,2008,Q4,1597880
+Western Australia,2008,Q4,2208928
+Tasmania,2008,Q4,501774
+Northern Territory,2008,Q4,222526
+Australian Capital Territory,2008,Q4,351101
+New South Wales,2009,Q1,7032423
+Victoria,2009,Q1,5347672
+Queensland,2009,Q1,4305605
+South Australia,2009,Q1,1604142
+Western Australia,2009,Q1,2228317
+Tasmania,2009,Q1,503431
+Northern Territory,2009,Q1,223922
+Australian Capital Territory,2009,Q1,353351
+New South Wales,2009,Q2,7053755
+Victoria,2009,Q2,5371934
+Queensland,2009,Q2,4328771
+South Australia,2009,Q2,1608902
+Western Australia,2009,Q2,2240250
+Tasmania,2009,Q2,504353
+Northern Territory,2009,Q2,226027
+Australian Capital Territory,2009,Q2,354785
+New South Wales,2009,Q3,7079175
+Victoria,2009,Q3,5398874
+Queensland,2009,Q3,4350135
+South Australia,2009,Q3,1614593
+Western Australia,2009,Q3,2253355
+Tasmania,2009,Q3,505468
+Northern Territory,2009,Q3,227255
+Australian Capital Territory,2009,Q3,356310
+New South Wales,2009,Q4,7101504
+Victoria,2009,Q4,5419249
+Queensland,2009,Q4,4367454
+South Australia,2009,Q4,1618578
+Western Australia,2009,Q4,2263747
+Tasmania,2009,Q4,506461
+Northern Territory,2009,Q4,227783
+Australian Capital Territory,2009,Q4,357859
+New South Wales,2010,Q1,7128356
+Victoria,2010,Q1,5445172
+Queensland,2010,Q1,4387801
+South Australia,2010,Q1,1624033
+Western Australia,2010,Q1,2278589
+Tasmania,2010,Q1,508182
+Northern Territory,2010,Q1,228600
+Australian Capital Territory,2010,Q1,360361
+New South Wales,2010,Q2,7144292
+Victoria,2010,Q2,5461101
+Queensland,2010,Q2,4404744
+South Australia,2010,Q2,1627322
+Western Australia,2010,Q2,2290845
+Tasmania,2010,Q2,508847
+Northern Territory,2010,Q2,229778
+Australian Capital Territory,2010,Q2,361766
+New South Wales,2010,Q3,7162726
+Victoria,2010,Q3,5478710
+Queensland,2010,Q3,4421470
+South Australia,2010,Q3,1630230
+Western Australia,2010,Q3,2305415
+Tasmania,2010,Q3,509481
+Northern Territory,2010,Q3,230460
+Australian Capital Territory,2010,Q3,362838
+New South Wales,2010,Q4,7179891
+Victoria,2010,Q4,5495711
+Queensland,2010,Q4,4436882
+South Australia,2010,Q4,1632482
+Western Australia,2010,Q4,2319063
+Tasmania,2010,Q4,510219
+Northern Territory,2010,Q4,230299
+Australian Capital Territory,2010,Q4,364833
+New South Wales,2011,Q1,7204737
+Victoria,2011,Q1,5520378
+Queensland,2011,Q1,4457971
+South Australia,2011,Q1,1636759
+Western Australia,2011,Q1,2337611
+Tasmania,2011,Q1,511248
+Northern Territory,2011,Q1,230224
+Australian Capital Territory,2011,Q1,366737
+New South Wales,2011,Q2,7218529
+Victoria,2011,Q2,5537817
+Queensland,2011,Q2,4476778
+South Australia,2011,Q2,1639614
+Western Australia,2011,Q2,2353409
+Tasmania,2011,Q2,511483
+Northern Territory,2011,Q2,231292
+Australian Capital Territory,2011,Q2,367985
+New South Wales,2011,Q3,7239528
+Victoria,2011,Q3,5564662
+Queensland,2011,Q3,4498104
+South Australia,2011,Q3,1643402
+Western Australia,2011,Q3,2369612
+Tasmania,2011,Q3,511880
+Northern Territory,2011,Q3,232581
+Australian Capital Territory,2011,Q3,369888
+New South Wales,2011,Q4,7258722
+Victoria,2011,Q4,5591818
+Queensland,2011,Q4,4518649
+South Australia,2011,Q4,1647183
+Western Australia,2011,Q4,2385947
+Tasmania,2011,Q4,511739
+Northern Territory,2011,Q4,232952
+Australian Capital Territory,2011,Q4,372070
+New South Wales,2012,Q1,7284982
+Victoria,2012,Q1,5625354
+Queensland,2012,Q1,4545613
+South Australia,2012,Q1,1652716
+Western Australia,2012,Q1,2408108
+Tasmania,2012,Q1,511993
+Northern Territory,2012,Q1,234275
+Australian Capital Territory,2012,Q1,374853
+New South Wales,2012,Q2,7304244
+Victoria,2012,Q2,5651091
+Queensland,2012,Q2,4568687
+South Australia,2012,Q2,1656725
+Western Australia,2012,Q2,2425507
+Tasmania,2012,Q2,511724
+Northern Territory,2012,Q2,235915
+Australian Capital Territory,2012,Q2,376539
+New South Wales,2012,Q3,7327614
+Victoria,2012,Q3,5680420
+Queensland,2012,Q3,4592100
+South Australia,2012,Q3,1660198
+Western Australia,2012,Q3,2442876
+Tasmania,2012,Q3,511582
+Northern Territory,2012,Q3,237517
+Australian Capital Territory,2012,Q3,378586
+New South Wales,2012,Q4,7353189
+Victoria,2012,Q4,5709586
+Queensland,2012,Q4,4611304
+South Australia,2012,Q4,1663082
+Western Australia,2012,Q4,2457489
+Tasmania,2012,Q4,511813
+Northern Territory,2012,Q4,238728
+Australian Capital Territory,2012,Q4,379812
+New South Wales,2013,Q1,7382957
+Victoria,2013,Q1,5744915
+Queensland,2013,Q1,4634430
+South Australia,2013,Q1,1668056
+Western Australia,2013,Q1,2475242
+Tasmania,2013,Q1,512240
+Northern Territory,2013,Q1,240107
+Australian Capital Territory,2013,Q1,382082
+New South Wales,2013,Q2,7404032
+Victoria,2013,Q2,5772669
+Queensland,2013,Q2,4652824
+South Australia,2013,Q2,1671488
+Western Australia,2013,Q2,2486944
+Tasmania,2013,Q2,512231
+Northern Territory,2013,Q2,241722
+Australian Capital Territory,2013,Q2,383257
+New South Wales,2013,Q3,7430904
+Victoria,2013,Q3,5804499
+Queensland,2013,Q3,4670784
+South Australia,2013,Q3,1675313
+Western Australia,2013,Q3,2496285
+Tasmania,2013,Q3,512510
+Northern Territory,2013,Q3,242301
+Australian Capital Territory,2013,Q3,384690
+New South Wales,2013,Q4,7454938
+Victoria,2013,Q4,5832585
+Queensland,2013,Q4,4685439
+South Australia,2013,Q4,1678052
+Western Australia,2013,Q4,2502188
+Tasmania,2013,Q4,513015
+Northern Territory,2013,Q4,242304
+Australian Capital Territory,2013,Q4,386318
+New South Wales,2014,Q1,7487834
+Victoria,2014,Q1,5869511
+Queensland,2014,Q1,4705187
+South Australia,2014,Q1,1683544
+Western Australia,2014,Q1,2512556
+Tasmania,2014,Q1,513681
+Northern Territory,2014,Q1,242790
+Australian Capital Territory,2014,Q1,388190
+New South Wales,2014,Q2,7508353
+Victoria,2014,Q2,5894917
+Queensland,2014,Q2,4719653
+South Australia,2014,Q2,1686945
+Western Australia,2014,Q2,2517608
+Tasmania,2014,Q2,513621
+Northern Territory,2014,Q2,242894
+Australian Capital Territory,2014,Q2,388799
+New South Wales,2014,Q3,7536277
+Victoria,2014,Q3,5927199
+Queensland,2014,Q3,4734613
+South Australia,2014,Q3,1690133
+Western Australia,2014,Q3,2524042
+Tasmania,2014,Q3,513898
+Northern Territory,2014,Q3,243201
+Australian Capital Territory,2014,Q3,390654
+New South Wales,2014,Q4,7562171
+Victoria,2014,Q4,5957512
+Queensland,2014,Q4,4747263
+South Australia,2014,Q4,1693107
+Western Australia,2014,Q4,2528619
+Tasmania,2014,Q4,514040
+Northern Territory,2014,Q4,242753
+Australian Capital Territory,2014,Q4,391981
+New South Wales,2015,Q1,7595731
+Victoria,2015,Q1,5995205
+Queensland,2015,Q1,4764439
+South Australia,2015,Q1,1698433
+Western Australia,2015,Q1,2536604
+Tasmania,2015,Q1,514812
+Northern Territory,2015,Q1,243059
+Australian Capital Territory,2015,Q1,394491
+New South Wales,2015,Q2,7616168
+Victoria,2015,Q2,6022322
+Queensland,2015,Q2,4777692
+South Australia,2015,Q2,1700668
+Western Australia,2015,Q2,2540672
+Tasmania,2015,Q2,515117
+Northern Territory,2015,Q2,244692
+Australian Capital Territory,2015,Q2,395813
+New South Wales,2015,Q3,7645324
+Victoria,2015,Q3,6057558
+Queensland,2015,Q3,4791520
+South Australia,2015,Q3,1703703
+Western Australia,2015,Q3,2545509
+Tasmania,2015,Q3,515697
+Northern Territory,2015,Q3,244570
+Australian Capital Territory,2015,Q3,397540
+New South Wales,2015,Q4,7671401
+Victoria,2015,Q4,6093049
+Queensland,2015,Q4,4804933
+South Australia,2015,Q4,1705937
+Western Australia,2015,Q4,2547745
+Tasmania,2015,Q4,515694
+Northern Territory,2015,Q4,244090
+Australian Capital Territory,2015,Q4,398874
+New South Wales,2016,Q1,7707412
+Victoria,2016,Q1,6138627
+Queensland,2016,Q1,4826538
+South Australia,2016,Q1,1710334
+Western Australia,2016,Q1,2554506
+Tasmania,2016,Q1,516861
+Northern Territory,2016,Q1,244627
+Australian Capital Territory,2016,Q1,401673
+New South Wales,2016,Q2,7732858
+Victoria,2016,Q2,6173172
+Queensland,2016,Q2,4845152
+South Australia,2016,Q2,1712843
+Western Australia,2016,Q2,2555978
+Tasmania,2016,Q2,517514
+Northern Territory,2016,Q2,245678
+Australian Capital Territory,2016,Q2,403104
+New South Wales,2016,Q3,7767915
+Victoria,2016,Q3,6205852
+Queensland,2016,Q3,4865303
+South Australia,2016,Q3,1717275
+Western Australia,2016,Q3,2564492
+Tasmania,2016,Q3,519606
+Northern Territory,2016,Q3,246443
+Australian Capital Territory,2016,Q3,406040
+New South Wales,2016,Q4,7795625
+Victoria,2016,Q4,6235781
+Queensland,2016,Q4,4882939
+South Australia,2016,Q4,1719580
+Western Australia,2016,Q4,2569606
+Tasmania,2016,Q4,521981
+Northern Territory,2016,Q4,246065
+Australian Capital Territory,2016,Q4,408878
+New South Wales,2017,Q1,7833463
+Victoria,2017,Q1,6278555
+Queensland,2017,Q1,4906370
+South Australia,2017,Q1,1725253
+Western Australia,2017,Q1,2579276
+Tasmania,2017,Q1,524574
+Northern Territory,2017,Q1,246231
+Australian Capital Territory,2017,Q1,413017
+New South Wales,2017,Q2,7855316
+Victoria,2017,Q2,6302608
+Queensland,2017,Q2,4926380
+South Australia,2017,Q2,1728673
+Western Australia,2017,Q2,2585720
+Tasmania,2017,Q2,526762
+Northern Territory,2017,Q2,247412
+Australian Capital Territory,2017,Q2,415046
+New South Wales,2017,Q3,7884752
+Victoria,2017,Q3,6333514
+Queensland,2017,Q3,4945129
+South Australia,2017,Q3,1733055
+Western Australia,2017,Q3,2594138
+Tasmania,2017,Q3,529350
+Northern Territory,2017,Q3,247514
+Australian Capital Territory,2017,Q3,417964
+New South Wales,2017,Q4,7900946
+Victoria,2017,Q4,6358210
+Queensland,2017,Q4,4960965
+South Australia,2017,Q4,1735654
+Western Australia,2017,Q4,2599928
+Tasmania,2017,Q4,531561
+Northern Territory,2017,Q4,246862
+Australian Capital Territory,2017,Q4,420226
+New South Wales,2018,Q1,7934688
+Victoria,2018,Q1,6398586
+Queensland,2018,Q1,4985955
+South Australia,2018,Q1,1742255
+Western Australia,2018,Q1,2610320
+Tasmania,2018,Q1,534754
+Northern Territory,2018,Q1,246674
+Australian Capital Territory,2018,Q1,423810
+New South Wales,2018,Q2,7954476
+Victoria,2018,Q2,6423038
+Queensland,2018,Q2,5006623
+South Australia,2018,Q2,1746137
+Western Australia,2018,Q2,2617792
+Tasmania,2018,Q2,537291
+Northern Territory,2018,Q2,247095
+Australian Capital Territory,2018,Q2,426081
+New South Wales,2018,Q3,7984525
+Victoria,2018,Q3,6454976
+Queensland,2018,Q3,5027543
+South Australia,2018,Q3,1751849
+Western Australia,2018,Q3,2628121
+Tasmania,2018,Q3,540241
+Northern Territory,2018,Q3,247006
+Australian Capital Territory,2018,Q3,428417
+New South Wales,2018,Q4,8003564
+Victoria,2018,Q4,6479695
+Queensland,2018,Q4,5046434
+South Australia,2018,Q4,1755715
+Western Australia,2018,Q4,2636404
+Tasmania,2018,Q4,542927
+Northern Territory,2018,Q4,245920
+Australian Capital Territory,2018,Q4,430758
+New South Wales,2019,Q1,8032991
+Victoria,2019,Q1,6518716
+Queensland,2019,Q1,5070306
+South Australia,2019,Q1,1762889
+Western Australia,2019,Q1,2649641
+Tasmania,2019,Q1,545803
+Northern Territory,2019,Q1,246016
+Australian Capital Territory,2019,Q1,433801
+New South Wales,2019,Q2,8046748
+Victoria,2019,Q2,6537305
+Queensland,2019,Q2,5088847
+South Australia,2019,Q2,1767395
+Western Australia,2019,Q2,2659625
+Tasmania,2019,Q2,547841
+Northern Territory,2019,Q2,246559
+Australian Capital Territory,2019,Q2,435730
+New South Wales,2019,Q3,8071350
+Victoria,2019,Q3,6567898
+Queensland,2019,Q3,5110540
+South Australia,2019,Q3,1774006
+Western Australia,2019,Q3,2674246
+Tasmania,2019,Q3,549947
+Northern Territory,2019,Q3,246677
+Australian Capital Territory,2019,Q3,438633
+New South Wales,2019,Q4,8088361
+Victoria,2019,Q4,6590050
+Queensland,2019,Q4,5129741
+South Australia,2019,Q4,1778928
+Western Australia,2019,Q4,2688799
+Tasmania,2019,Q4,553340
+Northern Territory,2019,Q4,246213
+Australian Capital Territory,2019,Q4,440267
+New South Wales,2020,Q1,8112001
+Victoria,2020,Q1,6616636
+Queensland,2020,Q1,5154305
+South Australia,2020,Q1,1787847
+Western Australia,2020,Q1,2706350
+Tasmania,2020,Q1,555975
+Northern Territory,2020,Q1,246969
+Australian Capital Territory,2020,Q1,443035
+New South Wales,2020,Q2,8110610
+Victoria,2020,Q2,6615046
+Queensland,2020,Q2,5165613
+South Australia,2020,Q2,1790355
+Western Australia,2020,Q2,2712912
+Tasmania,2020,Q2,557578
+Northern Territory,2020,Q2,247428
+Australian Capital Territory,2020,Q2,444903
+New South Wales,2020,Q3,8098905
+Victoria,2020,Q3,6591437
+Queensland,2020,Q3,5173071
+South Australia,2020,Q3,1792178
+Western Australia,2020,Q3,2720001
+Tasmania,2020,Q3,559427
+Northern Territory,2020,Q3,247755
+Australian Capital Territory,2020,Q3,445749
+New South Wales,2020,Q4,8094300
+Victoria,2020,Q4,6567195
+Queensland,2020,Q4,5184329
+South Australia,2020,Q4,1794514
+Western Australia,2020,Q4,2728187
+Tasmania,2020,Q4,561881
+Northern Territory,2020,Q4,247819
+Australian Capital Territory,2020,Q4,447650
+New South Wales,2021,Q1,8093015
+Victoria,2021,Q1,6555302
+Queensland,2021,Q1,5199548
+South Australia,2021,Q1,1798586
+Western Australia,2021,Q1,2739105
+Tasmania,2021,Q1,564840
+Northern Territory,2021,Q1,248185
+Australian Capital Territory,2021,Q1,449573
+New South Wales,2021,Q2,8097062
+Victoria,2021,Q2,6547822
+Queensland,2021,Q2,5215814
+South Australia,2021,Q2,1802601
+Western Australia,2021,Q2,2749365
+Tasmania,2021,Q2,567239
+Northern Territory,2021,Q2,248151
+Australian Capital Territory,2021,Q2,452508
+New South Wales,2021,Q3,8096719
+Victoria,2021,Q3,6543116
+Queensland,2021,Q3,5230029
+South Australia,2021,Q3,1803789
+Western Australia,2021,Q3,2755583
+Tasmania,2021,Q3,567829
+Northern Territory,2021,Q3,249465
+Australian Capital Territory,2021,Q3,453398
+New South Wales,2021,Q4,8117057
+Victoria,2021,Q4,6555013
+Queensland,2021,Q4,5249672
+South Australia,2021,Q4,1807839
+Western Australia,2021,Q4,2763240
+Tasmania,2021,Q4,569609
+Northern Territory,2021,Q4,250500
+Australian Capital Territory,2021,Q4,456005
+New South Wales,2022,Q1,8153203
+Victoria,2022,Q1,6591580
+Queensland,2022,Q1,5283479
+South Australia,2022,Q1,1818356
+Western Australia,2022,Q1,2778421
+Tasmania,2022,Q1,571384
+Northern Territory,2022,Q1,252107
+Australian Capital Territory,2022,Q1,459556
+New South Wales,2022,Q2,8182098
+Victoria,2022,Q2,6615232
+Queensland,2022,Q2,5310905
+South Australia,2022,Q2,1824969
+Western Australia,2022,Q2,2793934
+Tasmania,2022,Q2,572300
+Northern Territory,2022,Q2,253100
+Australian Capital Territory,2022,Q2,461262
+New South Wales,2022,Q3,8223908
+Victoria,2022,Q3,6657690
+Queensland,2022,Q3,5342317
+South Australia,2022,Q3,1833331
+Western Australia,2022,Q3,2815907
+Tasmania,2022,Q3,572790
+Northern Territory,2022,Q3,254404
+Australian Capital Territory,2022,Q3,464015
+New South Wales,2022,Q4,8264048
+Victoria,2022,Q4,6700395
+Queensland,2022,Q4,5376678
+South Australia,2022,Q4,1840187
+Western Australia,2022,Q4,2839523
+Tasmania,2022,Q4,573343
+Northern Territory,2022,Q4,255294
+Australian Capital Territory,2022,Q4,465873
+New South Wales,2023,Q1,8317329
+Victoria,2023,Q1,6757251
+Queensland,2023,Q1,5415786
+South Australia,2023,Q1,1851014
+Western Australia,2023,Q1,2868478
+Tasmania,2023,Q1,573836
+Northern Territory,2023,Q1,256466
+Australian Capital Territory,2023,Q1,469185
+New South Wales,2023,Q2,8356387
+Victoria,2023,Q2,6797169
+Queensland,2023,Q2,5450235
+South Australia,2023,Q2,1857646
+Western Australia,2023,Q2,2890936
+Tasmania,2023,Q2,573731
+Northern Territory,2023,Q2,257508
+Australian Capital Territory,2023,Q2,471340
+New South Wales,2023,Q3,8406338
+Victoria,2023,Q3,6845666
+Queensland,2023,Q3,5485974
+South Australia,2023,Q3,1865760
+Western Australia,2023,Q3,2916222
+Tasmania,2023,Q3,573819
+Northern Territory,2023,Q3,258543
+Australian Capital Territory,2023,Q3,473817
+New South Wales,2023,Q4,8437334
+Victoria,2023,Q4,6881068
+Queensland,2023,Q4,5516476
+South Australia,2023,Q4,1870937
+Western Australia,2023,Q4,2937647
+Tasmania,2023,Q4,574214
+Northern Territory,2023,Q4,259143
+Australian Capital Territory,2023,Q4,474862
+New South Wales,2024,Q1,8477401
+Victoria,2024,Q1,6928534
+Queensland,2024,Q1,5548832
+South Australia,2024,Q1,1878655
+Western Australia,2024,Q1,2962651
+Tasmania,2024,Q1,574965
+Northern Territory,2024,Q1,259967
+Australian Capital Territory,2024,Q1,477529
+New South Wales,2024,Q2,8492050
+Victoria,2024,Q2,6950961
+Queensland,2024,Q2,5571890
+South Australia,2024,Q2,1882164
+Western Australia,2024,Q2,2978147
+Tasmania,2024,Q2,574765
+Northern Territory,2024,Q2,260884
+Australian Capital Territory,2024,Q2,478430
+New South Wales,2024,Q3,8518897
+Victoria,2024,Q3,6981705
+Queensland,2024,Q3,5595403
+South Australia,2024,Q3,1886818
+Western Australia,2024,Q3,2996143
+Tasmania,2024,Q3,575339
+Northern Territory,2024,Q3,262006
+Australian Capital Territory,2024,Q3,479852
+New South Wales,2024,Q4,8536474
+Victoria,2024,Q4,7004598
+Queensland,2024,Q4,5619962
+South Australia,2024,Q4,1890825
+Western Australia,2024,Q4,3011063
+Tasmania,2024,Q4,576202
+Northern Territory,2024,Q4,263238
+Australian Capital Territory,2024,Q4,481169
+New South Wales,2025,Q1,8572598
+Victoria,2025,Q1,7047231
+Queensland,2025,Q1,5648685
+South Australia,2025,Q1,1898209
+Western Australia,2025,Q1,3032661
+Tasmania,2025,Q1,577202
+Northern Territory,2025,Q1,264899
+Australian Capital Territory,2025,Q1,483284
+New South Wales,2025,Q2,8590113
+Victoria,2025,Q2,7069856
+Queensland,2025,Q2,5669915
+South Australia,2025,Q2,1901615
+Western Australia,2025,Q2,3046209
+Tasmania,2025,Q2,577770
+Northern Territory,2025,Q2,265895
+Australian Capital Territory,2025,Q2,484635
+New South Wales,2025,Q3,8622501
+Victoria,2025,Q3,7099861
+Queensland,2025,Q3,5692660
+South Australia,2025,Q3,1907070
+Western Australia,2025,Q3,3063821
+Tasmania,2025,Q3,578326
+Northern Territory,2025,Q3,266967
+Australian Capital Territory,2025,Q3,486158
+New South Wales,2025,Q4,8641085
+Victoria,2025,Q4,7121913
+Queensland,2025,Q4,5712124
+South Australia,2025,Q4,1910553
+Western Australia,2025,Q4,3076528
+Tasmania,2025,Q4,579110
+Northern Territory,2025,Q4,267478
+Australian Capital Territory,2025,Q4,487202
