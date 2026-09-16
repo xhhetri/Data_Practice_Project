@@ -18,25 +18,25 @@ no code changes needed):
 """
 
 from __future__ import annotations
-
+ 
 import logging
 import re
 from pathlib import Path
-
+ 
 import pandas as pd
-
+ 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
-
+ 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BRONZE_DIR = REPO_ROOT / "data" / "bronze"
 FIXTURES_DIR = REPO_ROOT / "fixtures"
 PROCESSED_DIR = REPO_ROOT / "data" / "processed"
-
+ 
 # The 8 official Australian state/territory codes. Anything outside this
 # set after cleaning is a data quality problem, not a new category.
 VALID_STATES = {"NSW", "VIC", "QLD", "SA", "WA", "TAS", "NT", "ACT"}
-
+ 
 # Real government downloads land in whatever folder name the person who
 # downloaded them used, not the machine-readable source_name keys used
 # below. Add to this list when a new folder name shows up -- no other
@@ -125,8 +125,8 @@ def _parse_financial_year(fy: str) -> int:
     """'2020-21' -> 2020. Every FY-labelled source in this project uses
     the START calendar year as its 'year' value, for consistency."""
     return int(str(fy).split("-")[0])
-
-
+ 
+ 
 def _fy_start_from_date(date: pd.Timestamp) -> int:
     """Calendar date -> Australian financial year start (Jul-Jun). E.g.
     Sep 2020 and Mar 2021 both -> 2020 (both fall in FY2020-21)."""
@@ -447,26 +447,26 @@ def build_annual_master() -> pd.DataFrame:
         .sum()
         .rename(columns={"consumption_ml": "fuel_consumption_ml", "fy_year": "year"})
     )
-
+ 
     vkt = (
         load_bitre_yearbook()
         .groupby(["state", "year"], as_index=False)["vkt_million_km"]
         .sum()
         .rename(columns={"vkt_million_km": "vkt_road_million_km"})
     )
-
+ 
     target = (
         load_state_territory_ghg()
         .query("sector == 'Transport'")
         .groupby(["state", "year"], as_index=False)["ghg_kt_co2e"]
         .sum()
     )
-
+ 
     master = (
         fuel.merge(vkt, on=["state", "year"], how="inner")
         .merge(target, on=["state", "year"], how="inner")
     )
-
+ 
     veh_raw = load_vehicle_registrations()
     if "year" in veh_raw.columns:
         vehicles = (
@@ -490,13 +490,13 @@ def build_annual_master() -> pd.DataFrame:
             .rename(columns={"count": "registered_vehicles"})
         )
         master = master.merge(current_fleet, on="state", how="inner")
-
+ 
     log.info("Annual master table: %d rows (%d states x %d years, %s to %s)",
               len(master), master["state"].nunique(), master["year"].nunique(),
               master["year"].min(), master["year"].max())
     return master
-
-
+ 
+ 
 def build_annual_master_with_population() -> pd.DataFrame:
     """
     Same as build_annual_master(), plus population and per-capita
@@ -521,8 +521,8 @@ def build_annual_master_with_population() -> pd.DataFrame:
     log.info("Annual master (with population): %d rows (%s to %s)",
               len(merged), merged["year"].min(), merged["year"].max())
     return merged
-
-
+ 
+ 
 def build_monthly_fuel_series() -> pd.DataFrame:
     """State x month petroleum consumption -- the time-series forecasting
     target (see model.py: forecast_fuel_consumption)."""
@@ -533,18 +533,18 @@ def build_monthly_fuel_series() -> pd.DataFrame:
         .sort_values(["state", "date"])
     )
     return monthly
-
-
+ 
+ 
 def run() -> None:
     """Build all processed tables and write them to data/processed/."""
     PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-
+ 
     annual = build_annual_master()
     annual.to_csv(PROCESSED_DIR / "annual_master.csv", index=False)
-
+ 
     annual_pop = build_annual_master_with_population()
     annual_pop.to_csv(PROCESSED_DIR / "annual_master_with_population.csv", index=False)
-
+ 
     monthly_fuel = build_monthly_fuel_series()
     monthly_fuel.to_csv(PROCESSED_DIR / "monthly_fuel_series.csv", index=False)
 
