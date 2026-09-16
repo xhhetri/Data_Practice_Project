@@ -3,20 +3,20 @@ clean.py
 --------
 Load and clean the project's source CSVs, and build the analysis-ready
 tables used by eda.py and model.py.
- 
+
 Design choice (documented in CHANGELOG.md): this replaces the earlier
 Bronze/Silver/Gold connector architecture with a single, flat load->clean
 step. For a dataset this size, the layered pipeline added complexity
 without adding value -- one clear, testable module is easier for a
 4-person student team to maintain and reason about.
- 
+
 Source lookup order, per dataset (so real data drops in automatically,
 no code changes needed):
   1. data/bronze/<name>/<most recent dated folder>/<name>*.csv  (real data)
   2. data/bronze/<name>/<most recent dated folder>/<name>.SAMPLE.csv
   3. fixtures/<name>.SAMPLE.csv                                  (fallback)
 """
- 
+
 from __future__ import annotations
  
 import logging
@@ -68,8 +68,8 @@ BRONZE_FOLDER_ALIASES: dict[str, list[str]] = {
         "National, state and territory population",
     ],
 }
- 
- 
+
+
 def _locate(name: str, exts: tuple[str, ...] = ("csv", "xlsx", "xls")) -> Path:
     """
     Find the best available file for a given source name. Checks every
@@ -80,7 +80,7 @@ def _locate(name: str, exts: tuple[str, ...] = ("csv", "xlsx", "xls")) -> Path:
     """
     real_matches: list[Path] = []
     sample_matches: list[Path] = []
- 
+
     for alias in BRONZE_FOLDER_ALIASES.get(name, [name]):
         folder = BRONZE_DIR / alias
         if not folder.exists():
@@ -95,7 +95,7 @@ def _locate(name: str, exts: tuple[str, ...] = ("csv", "xlsx", "xls")) -> Path:
         ]
         for c in direct + nested:
             (sample_matches if "SAMPLE" in c.name else real_matches).append(c)
- 
+
     if real_matches:
         chosen = max(real_matches, key=lambda p: p.stat().st_mtime)
         log.info("Using real data for '%s': %s", name, chosen)
@@ -104,23 +104,23 @@ def _locate(name: str, exts: tuple[str, ...] = ("csv", "xlsx", "xls")) -> Path:
         chosen = max(sample_matches, key=lambda p: p.stat().st_mtime)
         log.info("Using sample data for '%s': %s", name, chosen)
         return chosen
- 
+
     for ext in exts:
         fallback = FIXTURES_DIR / f"{name}.SAMPLE.{ext}"
         if fallback.exists():
             log.info("Falling back to fixture for '%s': %s", name, fallback)
             return fallback
- 
+
     raise FileNotFoundError(f"No source file found for '{name}' (tried: {exts})")
- 
- 
+
+
 def _read_tabular(path: Path, **kwargs) -> pd.DataFrame:
     """Read CSV or Excel transparently based on file extension."""
     if path.suffix.lower() in (".xlsx", ".xls"):
         return pd.read_excel(path, **kwargs)
     return pd.read_csv(path, **kwargs)
- 
- 
+
+
 def _parse_financial_year(fy: str) -> int:
     """'2020-21' -> 2020. Every FY-labelled source in this project uses
     the START calendar year as its 'year' value, for consistency."""
@@ -131,8 +131,8 @@ def _fy_start_from_date(date: pd.Timestamp) -> int:
     """Calendar date -> Australian financial year start (Jul-Jun). E.g.
     Sep 2020 and Mar 2021 both -> 2020 (both fall in FY2020-21)."""
     return date.year if date.month >= 7 else date.year - 1
- 
- 
+
+
 def _standardise_state(df: pd.DataFrame, col: str = "state") -> pd.DataFrame:
     """Uppercase state codes and drop rows with unrecognised values."""
     df = df.copy()
@@ -143,12 +143,12 @@ def _standardise_state(df: pd.DataFrame, col: str = "state") -> pd.DataFrame:
                     bad.sum(), df.loc[bad, col].unique().tolist())
         df = df.loc[~bad]
     return df
- 
- 
+
+
 # ---------------------------------------------------------------------
 # Per-source loaders. Each returns a clean, typed DataFrame.
 # ---------------------------------------------------------------------
- 
+
 def load_population() -> pd.DataFrame:
     """
     Real: ABS wide-format quarterly ERP export ('Data1' sheet) -- one
@@ -158,7 +158,7 @@ def load_population() -> pd.DataFrame:
     """
     path = _locate("abs_population")
     is_real = path.suffix.lower() in (".xlsx", ".xls") and "Data1" in pd.ExcelFile(path).sheet_names
- 
+
     if is_real:
         raw = pd.read_excel(path, sheet_name="Data1", header=None)
         header_row = raw.iloc[0]
@@ -190,13 +190,13 @@ def load_population() -> pd.DataFrame:
     else:
         df = _read_tabular(path)
         df["fy_year"] = df["year"]  # fixture has no real dates; treat as already FY-aligned
- 
+
     df = _standardise_state(df)
     df["population"] = pd.to_numeric(df["population"], errors="coerce")
     df = df.dropna(subset=["population"])
     return df
- 
- 
+
+
 def load_bitre_yearbook() -> pd.DataFrame:
     """
     Real: BITRE Yearbook 'Table 4.3' -- total VKT by state/territory,
@@ -206,7 +206,7 @@ def load_bitre_yearbook() -> pd.DataFrame:
     """
     path = _locate("bitre_yearbook")
     is_real = path.suffix.lower() in (".xlsx", ".xls") and "Table 4.3" in pd.ExcelFile(path).sheet_names
- 
+
     if is_real:
         raw = pd.read_excel(path, sheet_name="Table 4.3", header=None)
         state_cols = raw.iloc[3]
@@ -224,13 +224,13 @@ def load_bitre_yearbook() -> pd.DataFrame:
         df = df[["state", "year", "vkt_million_km"]]
     else:
         df = _read_tabular(path)
- 
+
     df = _standardise_state(df)
     df["vkt_million_km"] = pd.to_numeric(df["vkt_million_km"], errors="coerce")
     df = df.dropna(subset=["vkt_million_km"])
     return df
- 
- 
+
+
 def load_petroleum_statistics() -> pd.DataFrame:
     """
     Real: Australian Petroleum Statistics 'Sales by state and territory'
@@ -246,7 +246,7 @@ def load_petroleum_statistics() -> pd.DataFrame:
         path.suffix.lower() in (".xlsx", ".xls")
         and "Sales by state and territory" in pd.ExcelFile(path).sheet_names
     )
- 
+
     if is_real:
         raw = pd.read_excel(path, sheet_name="Sales by state and territory")
         raw = raw.rename(columns={"State": "state", "Month": "date"})
@@ -267,13 +267,13 @@ def load_petroleum_statistics() -> pd.DataFrame:
         df = _read_tabular(path)
         df["date"] = pd.to_datetime(dict(year=df["year"], month=df["month"], day=1))
         df["fy_year"] = df["date"].apply(_fy_start_from_date)
- 
+
     df = _standardise_state(df)
     df["consumption_ml"] = pd.to_numeric(df["consumption_ml"], errors="coerce")
     df = df.dropna(subset=["consumption_ml"])
     return df
- 
- 
+
+
 def load_quarterly_ghg_update() -> pd.DataFrame:
     """
     Real: NGGI Quarterly Update 'Data Table 1A' -- national quarterly
@@ -286,7 +286,7 @@ def load_quarterly_ghg_update() -> pd.DataFrame:
     """
     path = _locate("quarterly_ghg_update")
     is_real = path.suffix.lower() in (".xlsx", ".xls") and "Data Table 1A" in pd.ExcelFile(path).sheet_names
- 
+
     if is_real:
         raw = pd.read_excel(path, sheet_name="Data Table 1A", header=None)
         quarters = raw.iloc[6:, 1]
@@ -300,11 +300,11 @@ def load_quarterly_ghg_update() -> pd.DataFrame:
     else:
         df = _read_tabular(path)
         df["ghg_kt_co2e"] = pd.to_numeric(df["ghg_kt_co2e"], errors="coerce")
- 
+
     df = df.dropna(subset=["ghg_kt_co2e"])
     return df
- 
- 
+
+
 def load_state_territory_ghg() -> pd.DataFrame:
     """
     Real: 'State & Territory Inventories 2024 - Emission Data Tables' --
@@ -320,7 +320,7 @@ def load_state_territory_ghg() -> pd.DataFrame:
     """
     path = _locate("state_territory_ghg")
     is_real = path.suffix.lower() in (".xlsx", ".xls") and "NSW" in pd.ExcelFile(path).sheet_names
- 
+
     if is_real:
         sheet_to_state = {"NSW": "NSW", "Vic": "VIC", "Qld": "QLD", "SA": "SA",
                            "WA": "WA", "Tas": "TAS", "NT": "NT", "ACT": "ACT"}
@@ -350,20 +350,20 @@ def load_state_territory_ghg() -> pd.DataFrame:
         df = pd.DataFrame(records)
     else:
         df = _read_tabular(path)
- 
+
     df = _standardise_state(df)
     df["ghg_kt_co2e"] = pd.to_numeric(df["ghg_kt_co2e"], errors="coerce")
     df = df.dropna(subset=["ghg_kt_co2e"])
     return df
- 
- 
+
+
 def load_vehicle_registrations() -> pd.DataFrame:
     """
     Real: current registered-fleet CSV, broken down by year of
     MANUFACTURE, not year of registration -- this is a single snapshot
     of today's fleet composition, not a historical annual time series.
     (Filename suffix 'yom' = year of manufacture, confirming this.)
- 
+
     Returns state, vehicle_type, year_of_manufacture, count -- deliberately
     NOT renamed to a 'year' column, so it can't be silently misused as if
     it were a real per-year time series. See build_annual_master() for
@@ -375,19 +375,19 @@ def load_vehicle_registrations() -> pd.DataFrame:
     """
     path = _locate("vehicle_registrations")
     is_real = "year_of_manufacture" in _read_tabular(path, nrows=0).columns
- 
+
     if is_real:
         df = _read_tabular(path)
         df = df.rename(columns={"state_abb": "state", "no_vehicles": "count"})
     else:
         df = _read_tabular(path)
- 
+
     df = _standardise_state(df)
     df["count"] = pd.to_numeric(df["count"], errors="coerce")
     df = df.dropna(subset=["count"])
     return df
- 
- 
+
+
 def load_nga_factors() -> pd.DataFrame:
     """
     Real: NGA Factors 2025 workbook, 'Table 9' (transport fuels by
@@ -403,7 +403,7 @@ def load_nga_factors() -> pd.DataFrame:
     """
     path = _locate("nga_factors_2025")
     is_real = path.suffix.lower() in (".xlsx", ".xls") and "Table 9" in pd.ExcelFile(path).sheet_names
- 
+
     if is_real:
         raw = pd.read_excel(path, sheet_name="Table 9", header=None, skiprows=3)
         raw.columns = ["transport_type", "fuel_type", "energy_content", "sc1_co2",
@@ -419,15 +419,15 @@ def load_nga_factors() -> pd.DataFrame:
         df = target[["fuel_type", "factor_kg_co2e_per_l"]]
     else:
         df = _read_tabular(path)
- 
+
     df["factor_kg_co2e_per_l"] = pd.to_numeric(df["factor_kg_co2e_per_l"], errors="coerce")
     return df.dropna(subset=["factor_kg_co2e_per_l"])
- 
- 
+
+
 # ---------------------------------------------------------------------
 # Analysis-ready master tables
 # ---------------------------------------------------------------------
- 
+
 def build_annual_master() -> pd.DataFrame:
     """
     State x financial-year table. Every source below reports on an
@@ -435,7 +435,7 @@ def build_annual_master() -> pd.DataFrame:
     consistency -- see _parse_financial_year() / _fy_start_from_date().
     A financial year is labelled by its start calendar year throughout
     (e.g. "2020" means FY2020-21).
- 
+
     registered_vehicles is a special case: the real source is a current
     fleet snapshot by manufacture year, not an annual time series, so
     it's broadcast as a constant per state across every year rather than
@@ -547,9 +547,9 @@ def run() -> None:
  
     monthly_fuel = build_monthly_fuel_series()
     monthly_fuel.to_csv(PROCESSED_DIR / "monthly_fuel_series.csv", index=False)
- 
+
     log.info("Processed tables written to %s", PROCESSED_DIR)
- 
- 
+
+
 if __name__ == "__main__":
     run()
