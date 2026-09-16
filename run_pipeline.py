@@ -1,6 +1,11 @@
 from src.analysis import clean, eda, model, validate
+<<<<<<< Updated upstream
  
  
+=======
+
+
+>>>>>>> Stashed changes
 def main() -> None:
     print("=" * 60)
     print("STEP 1/4 -- Clean & merge source data")
@@ -21,10 +26,18 @@ def main() -> None:
     print("STEP 4/4 -- Data quality validation")
     print("=" * 60)
     validate.run()
+<<<<<<< Updated upstream
  
     print("\nDone. See data/processed/, reports/figures/, "
           "reports/model_results/, and reports/validation/.")
  
  
+=======
+
+    print("\nDone. See data/processed/, reports/figures/, "
+          "reports/model_results/, and reports/validation/.")
+
+
+>>>>>>> Stashed changes
 if __name__ == "__main__":
     main()
