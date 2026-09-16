@@ -1,4 +1,4 @@
-from _future_ import annotations
+from __future__ import annotations
 
 import logging
 import re
@@ -7,9 +7,9 @@ from pathlib import Path
 import pandas as pd
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
-log = logging.getLogger(_name_)
+log = logging.getLogger(__name__)
 
-REPO_ROOT = Path(_file_).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[2]
 BRONZE_DIR = REPO_ROOT / "data" / "bronze"
 FIXTURES_DIR = REPO_ROOT / "fixtures"
 PROCESSED_DIR = REPO_ROOT / "data" / "processed"
