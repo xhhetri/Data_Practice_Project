@@ -1,0 +1,24 @@
+# Copy this file to .env and adjust values for your machine.
+# .env is git-ignored (see .gitignore) -- it never gets committed or pushed.
+# This .env.example IS meant to be committed, as a template for teammates.
+
+# --- Database (Gold layer) ---------------------------------------------
+# Default: local SQLite file, zero setup, good enough for this project size.
+DATABASE_URL=sqlite:///data/gold/warehouse.sqlite
+
+# To use Postgres instead (e.g. for a shared team DB), install it locally
+# or run `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16`
+# then point DATABASE_URL at it and add `psycopg2-binary` to requirements.txt:
+# DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/transport_emissions
+
+# --- App ports -----------------------------------------------------------
+STREAMLIT_PORT=8501
+API_HOST=0.0.0.0
+API_PORT=8000
+
+# --- Logging ---------------------------------------------------------------
+LOG_LEVEL=INFO
+
+# --- Monitoring ------------------------------------------------------------
+# KS-test p-value below this => flagged as drifted for that column
+MONITORING_DRIFT_PVALUE=0.05
