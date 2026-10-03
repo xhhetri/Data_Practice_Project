@@ -39,6 +39,9 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import KFold, cross_val_predict
@@ -160,9 +163,6 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
     mape = float(np.mean(np.abs((test - forecast.values) / test)) * 100)
 
     RESULTS_DIR.mkdir(parents=True, exist_ok=True)
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(train.index, train.values, label="train")
@@ -173,7 +173,10 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
     ax.legend()
     fig.tight_layout()
     fig.savefig(REPO_ROOT / "reports" / "figures" / f"06_forecast_{state}.png", dpi=150)
-    plt.close(fig)
+    # NOT closed here -- see "_figure" below. run() (the CLI/CI path) closes it
+    # after popping it out, since nothing displays it there; analysis.ipynb and
+    # scripts/build_dashboard.py both need the live Figure/series data, not just
+    # the saved PNG, so this function hands both back rather than discarding them.
 
     result = {
         "state": state,
@@ -182,6 +185,21 @@ def forecast_fuel_consumption(state: str = "NSW", test_months: int = 6) -> dict:
         "mae_ml": round(mae, 2),
         "mape_pct": round(mape, 2),
         "_caveat": _data_source_caveat(),
+        "_figure": fig,  # not JSON-serialisable -- run() pops this before dumping
+                          # to metrics.json; analysis.ipynb grabs it directly to
+                          # display inline.
+        "series": {
+            # Full series as {date, value} lists -- JSON-serialisable (unlike the
+            # pandas Timestamp index itself), used by scripts/build_dashboard.py
+            # to draw the actual train/actual/forecast lines interactively, not
+            # just report the summary MAE/MAPE numbers.
+            "train": [{"date": d.strftime("%Y-%m-%d"), "value": round(v, 1)}
+                      for d, v in train.items()],
+            "actual": [{"date": d.strftime("%Y-%m-%d"), "value": round(v, 1)}
+                       for d, v in test.items()],
+            "forecast": [{"date": d.strftime("%Y-%m-%d"), "value": round(v, 1)}
+                         for d, v in forecast.items()],
+        },
     }
     log.info("Forecast (%s, %s): MAE=%.1f ML, MAPE=%.1f%%", state, method, mae, mape)
     return result
@@ -198,7 +216,10 @@ def run() -> None:
     states = sorted(monthly["state"].unique())
     log.info("Forecasting fuel consumption for all %d states: %s", len(states), states)
     for state in states:
-        all_results[f"fuel_forecast_{state}"] = forecast_fuel_consumption(state)
+        result = forecast_fuel_consumption(state)
+        fig = result.pop("_figure")  # not JSON-serialisable; script/CI run, nothing
+        plt.close(fig)               # displays it, so close it here to free memory
+        all_results[f"fuel_forecast_{state}"] = result
 
     with open(RESULTS_DIR / "metrics.json", "w") as f:
         json.dump(all_results, f, indent=2)
