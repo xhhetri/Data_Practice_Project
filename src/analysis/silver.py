@@ -14,6 +14,7 @@ clean._locate(). This module only cleans what Bronze handed it.
 from __future__ import annotations
 
 import logging
+from functools import lru_cache
 import re
 from pathlib import Path
 
@@ -33,6 +34,29 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 SILVER_DIR = REPO_ROOT / "data" / "silver"
+
+
+@lru_cache(maxsize=32)
+def _cached_sheet(path, modified, size, options):
+    # ponytail: bounded workbook cache; file changes invalidate parsed sheets.
+    return pd.read_excel(path, **dict(options))
+
+
+def _read_excel(path, **kwargs):
+    stat = path.stat()
+    return _cached_sheet(path, stat.st_mtime_ns, stat.st_size,
+                         tuple(sorted(kwargs.items()))).copy()
+
+
+@lru_cache(maxsize=16)
+def _cached_sheet_names(path, modified, size):
+    with pd.ExcelFile(path) as workbook:
+        return tuple(workbook.sheet_names)
+
+
+def _sheet_names(path):
+    stat = path.stat()
+    return _cached_sheet_names(path, stat.st_mtime_ns, stat.st_size)
 
 
 def _persist(name: str, df: pd.DataFrame) -> Path:
@@ -55,10 +79,10 @@ def load_population() -> pd.DataFrame:
     Fixture fallback: flat state,year,quarter,population CSV.
     """
     path = _locate("abs_population")
-    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Data1" in pd.ExcelFile(path).sheet_names
+    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Data1" in _sheet_names(path)
 
     if is_real:
-        raw = pd.read_excel(path, sheet_name="Data1", header=None)
+        raw = _read_excel(path, sheet_name="Data1", header=None)
         header_row = raw.iloc[0]
         state_names = {
             "New South Wales": "NSW", "Victoria": "VIC", "Queensland": "QLD",
@@ -104,10 +128,10 @@ def load_bitre_yearbook() -> pd.DataFrame:
     Fixture fallback: flat state,year,mode,vkt_million_km CSV.
     """
     path = _locate("bitre_yearbook")
-    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Table 4.3" in pd.ExcelFile(path).sheet_names
+    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Table 4.3" in _sheet_names(path)
 
     if is_real:
-        raw = pd.read_excel(path, sheet_name="Table 4.3", header=None)
+        raw = _read_excel(path, sheet_name="Table 4.3", header=None)
         state_cols = raw.iloc[3]
         col_map = {c: state_cols[c] for c in raw.columns if state_cols[c] in VALID_STATES}
         records = []
@@ -134,9 +158,9 @@ def load_bitre_yearbook() -> pd.DataFrame:
 def load_petroleum_statistics() -> pd.DataFrame:
     """
     Real: Australian Petroleum Statistics 'Sales by state and territory'
-    sheet -- wide format, one column per fuel product. Only the two
-    road-relevant totals are kept (automotive gasoline, diesel oil);
-    aviation turbine fuel and other non-road products are excluded.
+    sheet -- wide format, one column per fuel product. The two
+    petrol/diesel SALES totals are kept (automotive gasoline, diesel oil);
+    aviation products are excluded; total diesel still includes non-road use.
     Note: ACT is genuinely absent from this source's state breakdown --
     not a parsing gap, confirmed against the raw file's own State column.
     Fixture fallback: flat state,year,month,product,consumption_ml CSV.
@@ -144,11 +168,11 @@ def load_petroleum_statistics() -> pd.DataFrame:
     path = _locate("petroleum_statistics")
     is_real = (
         path.suffix.lower() in (".xlsx", ".xls")
-        and "Sales by state and territory" in pd.ExcelFile(path).sheet_names
+        and "Sales by state and territory" in _sheet_names(path)
     )
 
     if is_real:
-        raw = pd.read_excel(path, sheet_name="Sales by state and territory")
+        raw = _read_excel(path, sheet_name="Sales by state and territory")
         raw = raw.rename(columns={"State": "state", "Month": "date"})
         gasoline = raw[["state", "date", "Automotive gasoline: total (ML)"]].rename(
             columns={"Automotive gasoline: total (ML)": "consumption_ml"}
@@ -186,10 +210,10 @@ def load_quarterly_ghg_update() -> pd.DataFrame:
     is a known simplification of the fixture, not a real capability.
     """
     path = _locate("quarterly_ghg_update")
-    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Data Table 1A" in pd.ExcelFile(path).sheet_names
+    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Data Table 1A" in _sheet_names(path)
 
     if is_real:
-        raw = pd.read_excel(path, sheet_name="Data Table 1A", header=None)
+        raw = _read_excel(path, sheet_name="Data Table 1A", header=None)
         quarters = raw.iloc[6:, 1]
         transport_mt = pd.to_numeric(raw.iloc[6:, 4], errors="coerce")
         df = pd.DataFrame({"date": pd.to_datetime(quarters, errors="coerce"),
@@ -221,7 +245,7 @@ def load_state_territory_ghg() -> pd.DataFrame:
     Fixture fallback: flat state,year,sector,ghg_kt_co2e CSV.
     """
     path = _locate("state_territory_ghg")
-    is_real = path.suffix.lower() in (".xlsx", ".xls") and "NSW" in pd.ExcelFile(path).sheet_names
+    is_real = path.suffix.lower() in (".xlsx", ".xls") and "NSW" in _sheet_names(path)
 
     if is_real:
         sheet_to_state = {"NSW": "NSW", "Vic": "VIC", "Qld": "QLD", "SA": "SA",
@@ -229,7 +253,7 @@ def load_state_territory_ghg() -> pd.DataFrame:
         fy_pattern = re.compile(r"^\d{4}-\d{2}$")
         records = []
         for sheet, state in sheet_to_state.items():
-            raw = pd.read_excel(path, sheet_name=sheet, header=None)
+            raw = _read_excel(path, sheet_name=sheet, header=None)
             row0 = raw[0].astype(str).str.strip()
             transport_row = raw[row0 == "3.  Transport"]
             if transport_row.empty:
@@ -261,33 +285,40 @@ def load_state_territory_ghg() -> pd.DataFrame:
 
 
 def load_vehicle_registrations() -> pd.DataFrame:
+    """Historical BITRE Table 4.6b stock, thousands converted to vehicles.
+
+    Published calendar-year stock is associated with the FY starting in
+    that year. This approximate alignment is explicit, not a FY-average.
+    The separate manufacture-year CSV is a current snapshot and is not used.
     """
-    Real: current registered-fleet CSV, broken down by year of
-    MANUFACTURE, not year of registration -- this is a single snapshot
-    of today's fleet composition, not a historical annual time series.
-    (Filename suffix 'yom' = year of manufacture, confirming this.)
-
-    Returns state, vehicle_type, year_of_manufacture, count -- deliberately
-    NOT renamed to a 'year' column, so it can't be silently misused as if
-    it were a real per-year time series. See gold.build_annual_master() for
-    how this gets folded in (as a constant current-fleet-size per state,
-    not a genuine year-varying feature).
-    Fixture fallback: flat state,vehicle_type,year,count CSV (the fixture
-    *is* shaped as a real annual time series -- a simplification the real
-    data doesn't support).
-    """
-    path = _locate("vehicle_registrations")
-    is_real = "year_of_manufacture" in _read_tabular(path, nrows=0).columns
-
-    if is_real:
-        df = _read_tabular(path)
-        df = df.rename(columns={"state_abb": "state", "no_vehicles": "count"})
-    else:
-        df = _read_tabular(path)
-
-    df = _standardise_state(df)
-    df["count"] = pd.to_numeric(df["count"], errors="coerce")
-    df = df.dropna(subset=["count"])
+    path = _locate("bitre_yearbook")
+    raw = _read_excel(path, sheet_name="Table 4.6a-c", header=None)
+    titles = raw.iloc[:, 0].astype(str)
+    starts = raw.index[titles.str.startswith("Table 4.6b")].tolist()
+    if len(starts) != 1:
+        raise ValueError("BITRE historical vehicle stock Table 4.6b is missing")
+    start = starts[0]
+    ends = raw.index[(raw.index > start) & titles.str.startswith("Table 4.6c")]
+    block = raw.loc[start:(ends[0] - 1 if len(ends) else raw.index[-1])]
+    headers = block[block.apply(lambda row: "NSW" in row.values, axis=1)]
+    if headers.empty:
+        raise ValueError("BITRE vehicle-stock state header is missing")
+    header = headers.iloc[0]
+    records = []
+    for _, row in block.iterrows():
+        year = pd.to_numeric(row.iloc[0], errors="coerce")
+        if pd.isna(year) or not 1900 <= year <= 2100:
+            continue
+        for col, state in header.items():
+            if state not in VALID_STATES:
+                continue
+            count = pd.to_numeric(row[col], errors="coerce")
+            if pd.notna(count):
+                records.append({"state": state, "year": int(year),
+                                "vehicle_type": "All vehicles", "count": round(count * 1000)})
+    df = pd.DataFrame(records)
+    if df.empty or df.duplicated(["state", "year"]).any() or (df["count"] <= 0).any():
+        raise ValueError("Invalid historical vehicle stock")
     _persist("vehicle_registrations", df)
     return df
 
@@ -306,10 +337,10 @@ def load_nga_factors() -> pd.DataFrame:
     Fixture fallback: flat fuel_type,factor_kg_co2e_per_l CSV.
     """
     path = _locate("nga_factors_2025")
-    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Table 9" in pd.ExcelFile(path).sheet_names
+    is_real = path.suffix.lower() in (".xlsx", ".xls") and "Table 9" in _sheet_names(path)
 
     if is_real:
-        raw = pd.read_excel(path, sheet_name="Table 9", header=None, skiprows=3)
+        raw = _read_excel(path, sheet_name="Table 9", header=None, skiprows=3)
         raw.columns = ["transport_type", "fuel_type", "energy_content", "sc1_co2",
                        "sc1_ch4", "sc1_n2o", "sc1_combined", "sc3"]
         raw["transport_type"] = raw["transport_type"].ffill()

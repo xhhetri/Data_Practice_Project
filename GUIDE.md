@@ -1,232 +1,87 @@
-# Step-by-Step Guide — Setup, Run, DBMS & Tools
+# Running and demonstrating the project
 
-This guide covers everything needed to run this project locally end to
-end: environment setup, which database to use and why, how to run the
-pipeline / dashboard / API / monitoring, and which other applications
-are worth installing alongside it — mapped to the 8-stage data science
-lifecycle this project follows.
+Use Python 3.12 from the repository root. The raw government workbooks are tracked; this pipeline reads a fixed local snapshot rather than downloading live releases.
 
-Everything below runs **entirely on your own machine**. Nothing here
-pushes to GitHub or touches the original repo.
+## Setup and build
 
----
+On Windows:
 
-## 1. Prerequisites
-
-| Tool | Why | Check you have it |
-|---|---|---|
-| Python 3.11 or 3.12 | Runs everything in this project | `python3 --version` |
-| pip | Installs dependencies | `pip --version` |
-| git | Only needed if you want version history locally | `git --version` |
-| A code editor | VS Code recommended (free, great Python + SQLite extensions) | — |
-
-You do **not** need to install a separate database server for the
-default setup — see Section 3.
-
----
-
-## 2. Environment setup
-
-```bash
-# 1. Unzip the project folder you were given, then cd into it
-cd Data_Practice_Project
-
-# 2. Create an isolated Python environment (keeps this project's
-#    packages separate from anything else on your machine)
-python3 -m venv .venv
-
-# 3. Activate it
-source .venv/bin/activate        # macOS/Linux
-# .venv\Scripts\activate         # Windows (Command Prompt / PowerShell)
-
-# 4. Install all dependencies
-pip install -r requirements.txt
-
-# 5. Create your local config file from the template
-cp .env.example .env
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
+.venv\Scripts\python.exe run_pipeline.py
+.venv\Scripts\python.exe -m pytest tests/ -q
 ```
 
-Open `.env` in your editor. The defaults work as-is for a first run —
-you only need to change anything if you want to switch to Postgres
-(Section 3) or change a port that's already in use on your machine.
-
----
-
-## 3. Which DBMS to use
-
-**Use SQLite — it's already the default, no action needed.**
-
-| | SQLite (default) | Postgres (optional upgrade) |
-|---|---|---|
-| Setup | None — it's a single file, ships with Python | Install Postgres, or run one line of Docker |
-| Good for | One person, a laptop, a project this size | A shared team DB, concurrent writers, production-like setup |
-| Where data lives | `data/gold/warehouse.sqlite` (one file) | A running Postgres server |
-| Config | Nothing to do | Set `DATABASE_URL` in `.env` |
-
-For this project — a solo run or a small team pipeline, not a
-production system with concurrent users — **SQLite is the right
-choice**, not a simplification you'll need to "graduate" from. The
-project's `src/db.py` is written against SQLAlchemy, so if you ever do
-need Postgres (e.g. your team wants one shared database everyone reads
-from), it's a one-line config change, not a rewrite:
+On macOS/Linux:
 
 ```bash
-# Only if you want Postgres instead of SQLite:
-docker run -d --name transport-emissions-db -p 5432:5432 \
-  -e POSTGRES_PASSWORD=postgres postgres:16
-
-# Then in .env:
-DATABASE_URL=postgresql+psycopg2://postgres:postgres@localhost:5432/transport_emissions
-
-# And uncomment this line in requirements.txt, then re-run pip install:
-# psycopg2-binary>=2.9
+python3.12 -m venv .venv
+.venv/bin/python -m pip install -r requirements-lock.txt
+.venv/bin/python run_pipeline.py
+.venv/bin/python -m pytest tests/ -q
 ```
 
-**To look inside the database** (either engine), pick one:
-- Command line: `sqlite3 data/gold/warehouse.sqlite ".tables"` (SQLite only, no install needed on macOS/Linux)
-- A GUI browser: **DB Browser for SQLite** (free, sqlitebrowser.org) for SQLite, or **DBeaver** (free, works with both SQLite and Postgres) — recommended if you'd rather click through tables than type SQL.
+No `.env` is required for the default SQLite database. If customizing settings, copy `.env.example` to `.env`; that file is ignored by Git. The documented local services run on loopback. The optional environment variables do not automatically change the explicit launch arguments below.
 
----
+The build reads workbooks, so allow time for parsing and model evaluation. A successful final message is required; do not infer completion from partially updated files. Read the displayed observation cutoffs and run identifier before citing figures.
 
-## 4. Running the project
+## Standalone interface
 
-Make sure your virtual environment is activated (`source .venv/bin/activate`) before every step below.
+Open `dashboard/index.html` in a browser with `dashboard/plotly.min.js` beside it. Or serve the dashboard folder locally:
 
-### 4.1 Run the full pipeline
-
-```bash
-python run_pipeline.py
+```powershell
+.venv\Scripts\python.exe -m http.server 8765 --bind 127.0.0.1 --directory dashboard
 ```
 
-This runs, in order: clean & merge source data → exploratory data
-analysis → train & evaluate models → data-quality validation → **load
-everything into the DBMS**. Takes a few minutes on real data. Outputs land in:
+Open `http://127.0.0.1:8765`. Select a jurisdiction and start/end financial years. Download a Markdown briefing and CSV, and open them to verify sources, units and the selected period. The sales outlook uses the latest sales cutoff; changing the annual comparison does not change its training window.
 
-| Output | Location |
+## Streamlit and API
+
+In separate terminals:
+
+```powershell
+.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py --server.address 127.0.0.1 --server.port 8501 --server.headless true
+.venv\Scripts\python.exe -m uvicorn app.api:app --host 127.0.0.1 --port 8000
+```
+
+Open `http://127.0.0.1:8501` and `http://127.0.0.1:8000/docs`. Use `.venv/bin/python` on macOS/Linux. Stop services with Ctrl+C when finished.
+
+Useful API routes:
+
+| Route | Purpose |
 |---|---|
-| Cleaned tables | `data/processed/*.csv` |
-| EDA figures | `reports/figures/*.png` |
-| Model metrics + trained model | `reports/model_results/` |
-| Validation checks | `reports/validation/` |
-| **Database** | `data/gold/warehouse.sqlite` |
+| `GET /health` | Database readiness, run identifier and cutoffs |
+| `GET /states` | Available jurisdictions |
+| `GET /briefing?state=NSW&start_year=2016&end_year=2023` | Shared numeric summary and cited Markdown export |
+| `GET /forecast/NSW` | Earlier candidate scores, holdout, next-six-month sales outlook and bands |
+| `GET /provenance` | Sources, hashes, dates and package versions |
+| `GET /metrics` | Flattened recorded metrics; optional `result_group` filter |
+| `GET /monitoring/drift` | Same-run quality/freshness/descriptive drift report |
+| `POST /predict` | Associative annual estimate only; positive finite inputs within observed feature ranges |
 
-### 4.2 Run the automated tests
+The API and Streamlit read the database's full structured result snapshot. The scoring model must match the database run's hash. Unknown periods/states and impossible/out-of-range inputs are rejected. Services are local prototypes; public hosting/authentication has not been demonstrated.
 
-```bash
-pytest tests/ -v
-```
+## Verification before recording
 
-30 tests (~3–4 minutes): 24 for the data pipeline, 6 for the new
-database/monitoring code.
+1. Build and run the full tests. Check every process exits successfully.
+2. Repeat `python scripts/build_dashboard.py` using the environment's interpreter; mismatched artifacts should be rejected.
+3. Compare the static interface's run identifier with `/health` and `reports/run_metadata.json`.
+4. Select NSW FY2016-17→FY2023-24 in both interfaces and compare one total value, percentage change and per-capita value.
+5. Download and inspect both exports. Confirm the final-year label is financial-year based, forecast months follow the sales cutoff, and sources/limits are present.
+6. Show source-age/quality status. `no_drift` does not prove model accuracy; pooled KS comparisons are descriptive.
+7. Use `docs/assessment3/demo_runbook.md` and rehearse within 19 minutes before recording the final video.
 
-### 4.3 Run the interactive dashboard (Streamlit)
+## Refreshing sources and handling failures
 
-```bash
-streamlit run app/streamlit_app.py
-```
+Replace the relevant raw source only after reviewing its published structure and boundary. Source lookup currently prefers the most recently modified real workbook in recognized folders; remove ambiguity deliberately rather than dropping multiple alternative vintages into one folder. Keep the original file and retrieval evidence in the team's data record. Run the entire pipeline again; do not refresh only the model, database or HTML and call it the same completed run.
 
-Opens automatically in your browser at `http://localhost:8501`. Tabs:
-Historical trends, Monthly fuel, Models, and Monitoring. Reads live
-from the database, so run 4.1 first if any tab looks empty. Press
-`Ctrl+C` in the terminal to stop it.
+A structural quality failure prevents database publication. A database reload interruption rolls back to the prior snapshot. Disk analysis files may already have changed when a build fails, so static and database views can still represent the last completed run until a complete rebuild succeeds. Check run identifiers rather than assuming every file is current. Dashboard generation rejects changed core artifacts; the monitoring API rejects a report from a different database run.
 
-### 4.4 Run the scoring API (FastAPI)
+If the app has no data, build the pipeline. If exports/models do not match a run, rebuild rather than editing metadata manually. Streamlit caches a snapshot for up to 10 seconds; wait for a rerun after a rebuild. If a port is busy, select another explicit local port. SQLite is the tested database; an optional other SQLAlchemy URL requires a compatible driver and separate verification.
 
-```bash
-uvicorn app.api:app --reload --host 0.0.0.0 --port 8000
-```
+The persistent drift baseline is `reports/monitoring/reference_annual_master.csv`. Rebaseline only after reviewing an expected source change. Current source freshness describes observation age, not missing retrieval dates or a live feed.
 
-Then open `http://localhost:8000/docs` in a browser — an interactive
-page where you can try every endpoint by clicking "Try it out," no
-separate tool needed. To test from the command line instead:
+## Before submission
 
-```bash
-curl http://localhost:8000/health
-curl -X POST http://localhost:8000/predict \
-  -H "Content-Type: application/json" \
-  -d '{"fuel_consumption_ml": 10000, "vkt_road_million_km": 70000, "registered_vehicles": 6000000}'
-```
-
-Press `Ctrl+C` to stop it. If you'd rather use a GUI than curl, install
-**Postman** (free) or use the VS Code **REST Client** extension.
-
-### 4.5 Run the data-drift monitoring check
-
-```bash
-python monitoring/monitor.py
-```
-
-First time you run this, it saves today's data as the baseline to
-compare future runs against. Run it again any time after re-running
-the pipeline with new data to see whether anything drifted — the
-result also shows up in the Streamlit dashboard's Monitoring tab and at
-the API's `/monitoring/drift` endpoint.
-
-### 4.6 Regenerate the static dashboard (optional, unchanged from before)
-
-```bash
-python scripts/build_dashboard.py
-```
-
-Then just open `dashboard/index.html` directly in any browser — no
-server needed for this one.
-
-### 4.7 Run the notebook (optional)
-
-```bash
-pip install jupyter   # if not already installed
-jupyter notebook src/analysis/analysis.ipynb
-```
-
----
-
-## 5. Recommended applications, mapped to the project lifecycle
-
-The diagram this project follows has 8 stages. Here's what's already
-wired up in this repo for each, and what else is worth having installed
-locally:
-
-| Stage | Already in this repo | Extra apps worth having |
-|---|---|---|
-| 1. Problem understanding | `README.md`, `CHANGELOG.md` | A code editor (VS Code) to read/write markdown |
-| 2. Data acquisition | `data/bronze/` (downloaded government files) | A browser, for re-downloading source files if needed |
-| 3. Data preparation | `src/analysis/clean.py` | — |
-| 4. Exploratory data analysis | `src/analysis/eda.py`, `src/analysis/analysis.ipynb` | **Jupyter** (`pip install jupyter`) for interactive exploration |
-| 5. Modelling | `src/analysis/model.py` | — |
-| 6. Evaluation & interpretation | `src/analysis/validate.py`, **`src/db.py`** (new) | **DBeaver** or **DB Browser for SQLite** to inspect `model_metrics` |
-| 7. Deployment & visualization | `dashboard/index.html` (static) + **`app/streamlit_app.py`** and **`app/api.py`** (new) | **Postman** for exercising the API by hand |
-| 8. Monitoring & improvement | **`monitoring/monitor.py`** (new) | Nothing extra needed — this project's monitoring is dependency-light on purpose (see the note in `monitoring/monitor.py` about Evidently AI as an optional, heavier alternative) |
-
-Everything marked **(new)** is what this update adds on top of the
-repo as you found it — the previous version stopped at Stage 6
-(Evaluation), with the pipeline's output living only in loose CSV/JSON
-files, no database, dashboard app, API, or monitoring.
-
----
-
-## 6. Everyday workflow, once set up
-
-```bash
-source .venv/bin/activate     # every new terminal session
-python run_pipeline.py        # after any change to data or code
-python monitoring/monitor.py  # check for drift after re-running the pipeline
-streamlit run app/streamlit_app.py   # in one terminal, for browsing results
-uvicorn app.api:app --reload --port 8000   # in another terminal, if serving the API
-```
-
-## 7. Troubleshooting
-
-- **"No module named X"** — your virtual environment isn't activated, or
-  `pip install -r requirements.txt` hasn't been re-run since this
-  update. Re-run both.
-- **Dashboard/API says tables are empty** — run `python run_pipeline.py`
-  first; both apps read from the database, not the raw source files.
-- **Port already in use** (8501 or 8000) — change `STREAMLIT_PORT` /
-  `API_PORT` in `.env`, or pass `--server.port` / `--port` directly on
-  the command line.
-- **Want to start the database over** — delete
-  `data/gold/warehouse.sqlite` and re-run `python run_pipeline.py`; it
-  gets recreated automatically.
-- **Want to re-baseline monitoring** — delete
-  `reports/monitoring/reference_annual_master.csv` and re-run
-  `python monitoring/monitor.py`.
+The generated deck and runbook support the group demonstration, but do not replace the video. Supply actual presenter names/contributions and compare against the submitted Assessment 2 version. Follow `contribution_evidence_guide.md` to make one PDF containing exactly two pages per student, with one genuine specified Redshift Lab 2 screenshot on each student's second page. Conduct the planned pilot before asserting measured time savings or user benefit.

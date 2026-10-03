@@ -1,0 +1,69 @@
+{
+  "checked_at": "2026-10-03T10:38:52.225204+00:00",
+  "run_id": "982d7cbfcc4474d3",
+  "quality": {
+    "duplicate_annual_keys": 0,
+    "duplicate_monthly_keys": 0,
+    "missing_months": {
+      "NSW": [],
+      "NT": [],
+      "QLD": [],
+      "SA": [],
+      "TAS": [],
+      "VIC": [],
+      "WA": []
+    },
+    "missing_annual_years": {
+      "NSW": [],
+      "NT": [],
+      "QLD": [],
+      "SA": [],
+      "TAS": [],
+      "VIC": [],
+      "WA": []
+    },
+    "invalid_or_nonpositive_values": 0,
+    "missing_cells": 0,
+    "invalid_or_non_monthstart_dates": 0,
+    "mismatched_state_coverage": [],
+    "unexpected_state_coverage": [],
+    "population_key_mismatch": 0,
+    "invalid_population_rows": 0,
+    "status": "passed",
+    "freshness": {
+      "sales_period_end": "2026-06-30",
+      "sales_age_days": 95,
+      "inventory_period_end": "2024-06-30",
+      "inventory_age_days": 825,
+      "status": "review_source_release_lag",
+      "interpretation": "Age measures the observation cutoff, not the retrieval date. Annual inventories have publication lags. This tool does not provide live observations."
+    }
+  },
+  "columns": {
+    "fuel_consumption_ml": {
+      "ks_statistic": 0.0,
+      "p_value": 1.0,
+      "drifted": false
+    },
+    "vkt_road_million_km": {
+      "ks_statistic": 0.0,
+      "p_value": 1.0,
+      "drifted": false
+    },
+    "registered_vehicles": {
+      "ks_statistic": 0.0,
+      "p_value": 1.0,
+      "drifted": false
+    },
+    "ghg_kt_co2e": {
+      "ks_statistic": 0.0102,
+      "p_value": 1.0,
+      "drifted": false
+    }
+  },
+  "interpretation": "Pooled descriptive KS checks; no significant drift does not prove data correctness or model accuracy.",
+  "status": "no_drift",
+  "pvalue_threshold": 0.05,
+  "reference_rows": 98,
+  "current_rows": 98
+}

@@ -16,12 +16,14 @@ source of truth for "which file did we actually load".
 from __future__ import annotations
 
 import logging
+import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
 
 from src.analysis.clean import BRONZE_DIR, BRONZE_FOLDER_ALIASES, REPO_ROOT, _locate
+from src.catalog import SOURCES
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
@@ -38,7 +40,6 @@ SOURCE_NAMES = [
     "petroleum_statistics",
     "quarterly_ghg_update",
     "state_territory_ghg",
-    "vehicle_registrations",
     "nga_factors_2025",
 ]
 
@@ -74,6 +75,10 @@ def build_manifest() -> pd.DataFrame:
             "is_sample": is_sample,
             "size_bytes": stat.st_size,
             "modified_at": datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat(),
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+            "url": SOURCES[name][0],
+            "boundary": SOURCES[name][1],
+            "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence",
         })
     return pd.DataFrame(rows)
 

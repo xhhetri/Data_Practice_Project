@@ -55,8 +55,15 @@ def get_engine():
     if url.startswith("sqlite:///"):
         db_path = Path(url.replace("sqlite:///", "", 1))
         db_path.parent.mkdir(parents=True, exist_ok=True)
-    log.info("Using database: %s", url)
-    return create_engine(url)
+    engine = create_engine(url)
+    log.info("Using database: %s", engine.url.render_as_string(hide_password=True))
+    return engine
+
+
+def begin_sqlite_transaction(conn):
+    """Include DDL and reads in SQLite's transaction under legacy sqlite3 mode."""
+    if conn.dialect.name == 'sqlite' and not conn.connection.driver_connection.in_transaction:
+        conn.exec_driver_sql('BEGIN')
 
 
 _SKIP_KEYS = {"series", "_figure"}
@@ -98,18 +105,28 @@ def load_processed_to_db(engine=None) -> dict:
     monitoring/monitor.py)."""
     engine = engine or get_engine()
     summary = {}
+    from src.briefing import load_metadata
+    from src.provenance import verify_outputs
+    metadata = load_metadata()
+    verify_outputs(metadata)
 
     csv_tables = {
         "annual_master": PROCESSED_DIR / "annual_master.csv",
         "annual_master_with_population": PROCESSED_DIR / "annual_master_with_population.csv",
         "monthly_fuel_series": PROCESSED_DIR / "monthly_fuel_series.csv",
     }
+    from monitoring.monitor import check_quality
+    quality = check_quality(pd.read_csv(csv_tables['annual_master']),
+                            pd.read_csv(csv_tables['monthly_fuel_series']),
+                            annual_population=pd.read_csv(csv_tables['annual_master_with_population']))
+    if quality['status'] != 'passed':
+        raise ValueError('Data quality failed; previous database snapshot was retained')
 
     with engine.begin() as conn:
+        begin_sqlite_transaction(conn)
         for table, path in csv_tables.items():
             if not path.exists():
-                log.warning("Skipping %s -- %s not found (run the pipeline first)", table, path)
-                continue
+                raise FileNotFoundError(f'Incomplete pipeline run: {path}')
             df = pd.read_csv(path)
             df.to_sql(table, conn, if_exists="replace", index=False)
             summary[table] = len(df)
@@ -119,11 +136,21 @@ def load_processed_to_db(engine=None) -> dict:
         if metrics_path.exists():
             with open(metrics_path) as f:
                 metrics = json.load(f)
+            if metrics.get('_run', {}).get('run_id') != metadata['run_id']:
+                raise ValueError('Model results and source metadata have different run identifiers')
             metrics_df = _flatten_metrics(metrics)
             if not metrics_df.empty:
                 metrics_df.to_sql("model_metrics", conn, if_exists="replace", index=False)
                 summary["model_metrics"] = len(metrics_df)
                 log.info("Loaded %d rows -> table 'model_metrics'", len(metrics_df))
+            pd.DataFrame([{'result_group': key, 'payload': json.dumps(value)}
+                          for key, value in metrics.items()]).to_sql(
+                'analysis_results', conn, if_exists='replace', index=False)
+
+        metadata_path = REPO_ROOT / 'reports/run_metadata.json'
+        if metadata_path.exists():
+            pd.DataFrame([{'payload': metadata_path.read_text(encoding='utf-8')}]).to_sql(
+                'pipeline_metadata', conn, if_exists='replace', index=False)
 
         conn.execute(
             text(

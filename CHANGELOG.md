@@ -1,4 +1,17 @@
+# Changelog
 
+## [Unreleased] - 2026-10-03 (usable state briefings and rigorous evaluation)
+
+- Replaced the manufacturing-year snapshot with historical BITRE Table 4.6b fleet stock and documented calendar/FY alignment.
+- Corrected petrol/total-diesel sales scope and preserved signed inventory discrepancies; reconciliation remains unresolved.
+- Replaced shuffled annual evaluation with chronological whole-year folds and a previous-year benchmark; reported per-state errors and association limits.
+- Added earlier rolling seasonal-naive/Holt-Winters comparison, final-six-month holdout, after-cutoff forecasts, empirical intervals and observed holdout coverage.
+- Added state/year briefing workflow, peer and per-capita comparisons, source/run evidence, Markdown/CSV exports in static and Streamlit interfaces, and shared API summaries.
+- Added source/core-output hashes, matching database snapshots, pre-publication quality gates, population/product completeness and tested SQLite rollback.
+- Corrected script, Streamlit and CI paths; integrated dashboard/diagrams/evidence generation and locked a reduced dependency set.
+- Added honest technical results, example briefings, benefit pilot protocol, timed Assessment 3 demonstration and individual-evidence guide. Participant benefit, video and personal lab evidence remain to be supplied.
+
+Earlier entries below describe previous project states; their old accuracy/scope/deployment claims are superseded by this revision and the current README.
 # Changelog
 
 ## [Unreleased] - 2026-09-12 (DBMS, deployment, and monitoring layers added)
@@ -581,3 +594,4 @@ inaccurate.
   6.16M in 2023, matching real fleet growth), not just "the code ran."
 - Re-screenshotted the dashboard's "Registered vehicles" chart post-fix
   -- smooth real growth curves, not flat lines.
+

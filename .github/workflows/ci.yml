@@ -18,16 +18,16 @@ jobs:
           python-version: "3.12"
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: pip install -r requirements-lock.txt
 
-      - name: Run test suite
-        run: pytest tests/ -v
-
-      - name: Run full pipeline (smoke test on fixture data)
+      - name: Run full pipeline on tracked government data
         run: python run_pipeline.py
 
-      - name: Run data-drift monitoring check
-        run: python monitoring/monitor.py
+      - name: Run test suite and verify regenerated dashboard
+        run: |
+          python -m pytest tests/ -v
+          python scripts/build_dashboard.py
+          node tests/check_dashboard_exports.mjs
 
       - name: Upload generated reports as a build artifact
         uses: actions/upload-artifact@v4
@@ -37,4 +37,7 @@ jobs:
             data/processed/
             data/gold/
             reports/
+            dashboard/index.html
+            docs/architecture/architecture_v4.png
+            docs/workflow/workflow_v4.png
           retention-days: 14
