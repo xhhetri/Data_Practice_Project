@@ -53,6 +53,10 @@ coverage.xml
 .pytest_db_tmp/
 .pytest_forecast_tmp/
 .build/
+data/operational/
+private-uploads/
+private-backups/
+.superpowers/
 cover/
 
 # Translations
