@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-const html=fs.readFileSync(new URL('../dashboard/index.html',import.meta.url),'utf8');
+const html=fs.readFileSync(new URL('../dashboard/transport.html',import.meta.url),'utf8');
 const code=[...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m=>m[1]).find(s=>s.includes('const DATA ='));
 assert.ok(code,'A generated dashboard contract is required');
 const elements=new Map();

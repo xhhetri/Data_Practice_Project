@@ -28,6 +28,7 @@ jobs:
           python -m pytest tests/ -v
           python scripts/build_dashboard.py
           node tests/check_dashboard_exports.mjs
+          node tests/check_market_dashboard.mjs
 
       - name: Upload generated reports as a build artifact
         uses: actions/upload-artifact@v4
@@ -38,6 +39,10 @@ jobs:
             data/gold/
             reports/
             dashboard/index.html
+            dashboard/transport.html
+            dashboard/plotly.min.js
             docs/architecture/architecture_v4.png
+            docs/architecture/architecture_v5.png
             docs/workflow/workflow_v4.png
+            docs/workflow/workflow_v5.png
           retention-days: 14

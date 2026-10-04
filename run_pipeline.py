@@ -1,5 +1,6 @@
 from src.analysis import clean, eda, model, validate
 from src import db, provenance
+from src import market_review
 from scripts import build_dashboard, generate_diagrams, build_evidence
 from monitoring import monitor
 
@@ -13,6 +14,7 @@ def main():
         ('Bind source, code and output provenance', provenance.write_metadata),
         ('Data quality gate and drift diagnostics', lambda: monitor.run(log_to_db=False)),
         ('Publish quality-checked artifacts to SQLite', db.run),
+        ('Build fuel-specific outlooks and cached daily/weekly market evidence', market_review.run),
         ('Build analyst dashboard', build_dashboard.run),
         ('Generate architecture and workflow figures', generate_diagrams.run),
         ('Generate technical evidence and example briefings', build_evidence.run),

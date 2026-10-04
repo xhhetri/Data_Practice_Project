@@ -1,5 +1,7 @@
 # PRT661 Assessment 3: 19-minute technical demonstration
 
+The current default demonstration is FuelScope. Use [the updated market-review recording runbook](fuelscope_video_runbook.md). The retained sequence below documents the original transport briefing workflow, which remains accessible through the dashboard link.
+
 Based on the assessment brief supplied by the team. The supplied document specifies submission requirements rather than an HD grade-band rubric. This preparation supports a strong submission; it cannot establish or guarantee a grade.
 
 ## Preparation

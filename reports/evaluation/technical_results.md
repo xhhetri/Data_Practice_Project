@@ -1,6 +1,6 @@
 # Technical evaluation results
 
-Run `982d7cbfcc4474d3`; built 2026-10-03T10:38:50.605958+00:00.
+Run `a57380f681bc5405`; built 2026-10-04T03:28:57.529183+00:00.
 
 These are computed results, not participant-study findings. See docs/evaluation/pilot_protocol.md for the benefit evaluation.
 
@@ -20,7 +20,7 @@ Candidates are selected on earlier rolling windows. The final six months are hel
 
 21 earlier windows per state. Final holdout: 2026-01-01 to 2026-06-01.
 After-cutoff outlook: 2026-07-01 to 2026-12-01.
-Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.
+Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.
 
 The 80/95% labels describe empirical error quantiles, not guaranteed future coverage. Six held-out observations cannot establish calibrated uncertainty. Candidate selection has not used the final holdout error. The same-holdout baseline is reported after selection, so selected Holt-Winters can underperform it on this test.
 

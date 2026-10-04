@@ -47,7 +47,13 @@ def build_html(data):
 
 def run():
     data = build_data()
-    (ROOT / 'dashboard/index.html').write_text(build_html(data), encoding='utf-8')
+    html = build_html(data)
+    (ROOT / 'dashboard/transport.html').write_text(html, encoding='utf-8')
+    if (ROOT / 'reports/market_review/snapshot.json').exists():
+        from scripts.build_market_dashboard import run as build_market
+        build_market()
+    else:
+        (ROOT / 'dashboard/index.html').write_text(html, encoding='utf-8')
     print(f'Dashboard built for run {data["metadata"]["run_id"]}; {len(data["states"])} jurisdictions')
 
 

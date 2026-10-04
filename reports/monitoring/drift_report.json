@@ -1,6 +1,6 @@
 {
-  "checked_at": "2026-10-03T10:38:52.225204+00:00",
-  "run_id": "982d7cbfcc4474d3",
+  "checked_at": "2026-10-04T03:28:58.100026+00:00",
+  "run_id": "a57380f681bc5405",
   "quality": {
     "duplicate_annual_keys": 0,
     "duplicate_monthly_keys": 0,
@@ -32,9 +32,9 @@
     "status": "passed",
     "freshness": {
       "sales_period_end": "2026-06-30",
-      "sales_age_days": 95,
+      "sales_age_days": 96,
       "inventory_period_end": "2024-06-30",
-      "inventory_age_days": 825,
+      "inventory_age_days": 826,
       "status": "review_source_release_lag",
       "interpretation": "Age measures the observation cutoff, not the retrieval date. Annual inventories have publication lags. This tool does not provide live observations."
     }

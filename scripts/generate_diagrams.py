@@ -25,6 +25,23 @@ def diagram(path, title, rows):
 
 
 def run():
+    diagram(ROOT/'docs/architecture/architecture_v5.png', 'FuelScope — implemented evidence architecture', [
+        'Original six government source files → validated transport pipeline\nRetained annual analysis, Gold warehouse and historical run identity',
+        'AIP weekday prices + DCCEEW weekly MSO + current petroleum extract\nExplicit refresh → temporary download → schema, value and date checks',
+        'Validated market cache + source manifest\nObservation cutoffs, retrieval dates, source hashes and failed-feed retention',
+        'Separate petrol/diesel state sales → seasonal naive vs Holt-Winters\n41 earlier rolling origins → untouched six-month holdout → refit outlook',
+        'Market evidence snapshot + model identity\nNational stocks stay national; city prices and state sales remain distinct',
+        'FuelScope browser dashboard + loopback refresh service\nCached daily/weekly context • monthly outlook • retained transport analysis',
+        'Analyst review → local checkpoint and notes → cited Markdown/CSV/print\nAssessment 4: added predictors and real repeated-use evaluation'])
+    diagram(ROOT/'docs/workflow/workflow_v5.png', 'FuelScope — daily check and weekly briefing workflow', [
+        'Open the workspace → select jurisdiction and petrol/diesel',
+        'Check official source updates; retain prior evidence if a feed fails',
+        'Daily: inspect dated wholesale-price changes and the source',
+        'Weekly: inspect national holdings, effective obligation and source age',
+        'On sales release: inspect fuel-specific outlook and baseline performance',
+        'Record questions and interpretation → export a cited briefing',
+        'Save a browser checkpoint → next visit compare actual evidence changes',
+        'Assessment 4: evaluate review time, interpretation and voluntary return'])
     diagram(ROOT/'docs/architecture/architecture_v4.png', 'Australian transport briefing tool — actual architecture', [
         'Government workbooks → Bronze source manifest\nOfficial URLs, file hashes, explicit boundaries',
         'Silver: typed source tables in Parquet\nHistorical BITRE stock • monthly fuel SALES • whole-transport inventories',

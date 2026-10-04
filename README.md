@@ -1,12 +1,22 @@
-# Australian transport evidence briefing
+# FuelScope: Australian fuel-market review
 
-An analyst tool for preparing a cited state transport briefing: choose a jurisdiction and financial-year range, compare total and per-person inventories, inspect evidence and take away a Markdown briefing or CSV. A separate six-month outlook describes petrol plus total diesel **sales**, with chronological evaluation against a seasonal-naive baseline.
+An analyst workspace for **daily wholesale-price checks and weekly fuel-market briefings**. Choose a jurisdiction and fuel, inspect dated price and national-stock changes, evaluate the separate petrol/diesel sales outlook, save a local review checkpoint and export a cited briefing. The original transport/emissions analysis remains available through the dashboard's link and Streamlit.
 
-The intended benefit is faster, more accurate briefing preparation. That benefit is **not yet demonstrated by participant research**. The [pilot protocol](docs/evaluation/pilot_protocol.md) defines how the team will measure it before Assessment 4. No causal policy effect or emissions-reduction outcome is claimed.
+The intended benefit is faster, more accurate recurring review. Actual adoption and time savings are **not yet demonstrated by participant research**. The [market-review pilot](docs/evaluation/market_review_pilot.md) defines the Assessment 4 evaluation. Statistical changes are investigation prompts, not shortage forecasts or policy effects.
 
 ## Use it
 
-Open [the standalone dashboard](dashboard/index.html) with its adjacent `plotly.min.js`; no server or internet is required. Select a state and period, compare total and per-capita change, inspect peers, then download the cited briefing and selected data. For a database-backed interface, use Streamlit. Generated [example briefings](reports/briefings/) and the [technical results](reports/evaluation/technical_results.md) are also directly readable.
+On Windows, double-click **Start-FuelScope.cmd**, or start the local review service:
+
+```powershell
+.venv\Scripts\python.exe -m scripts.serve_review --port 8766
+```
+
+Open **http://127.0.0.1:8766/**. Use **Check for updates** to check the official publication pages; validated caches remain available if a feed fails. Nothing downloads automatically on page load. Wholesale prices update on working days; weekly MSO publication is currently temporary; monthly sales retain their reporting lag.
+
+The [standalone dashboard](dashboard/index.html) also works offline with its adjacent `plotly.min.js`. Its refresh control explains how to open the local service. Notes, selected jurisdiction/fuel and a review checkpoint are stored only in this browser. Markdown and evidence CSV downloads work offline; **Print / save PDF** opens the browser's print workflow.
+
+The [original transport dashboard](dashboard/transport.html), [original technical results](reports/evaluation/technical_results.md), and [market model results](reports/market_review/technical_results.md) remain directly readable.
 
 Rebuild with Python 3.12 and the tracked government files:
 
@@ -15,14 +25,16 @@ python -m venv .venv
 .venv\Scripts\python.exe -m pip install -r requirements-lock.txt
 .venv\Scripts\python.exe run_pipeline.py
 .venv\Scripts\python.exe -m pytest tests/ -q
-.venv\Scripts\python.exe -m streamlit run app/streamlit_app.py
+.venv\Scripts\python.exe -m scripts.serve_review --port 8766
 ```
 
 On macOS/Linux, use `.venv/bin/python` in place of `.venv\Scripts\python.exe`. Run commands from the repository root. This checkout already has a local `.venv`; its environment is not committed. See [GUIDE.md](GUIDE.md) for API, troubleshooting and verification.
 
 ## What the data means
 
-The merged comparison covers seven jurisdictions (ACT excluded), FY2010-11 to FY2023-24, with 98 annual state-year rows. The monthly sales series has 1,344 observations from July 2010 through June 2026. These are the current snapshot's boundaries; the displayed run metadata is authoritative after a refresh.
+The retained annual comparison covers seven jurisdictions, FY2010-11 to FY2023-24, with 98 rows. The original combined monthly-sales release retains its 1,344 observations through June 2026. The new market module uses a separately retained July 2026 petroleum extract with **2,702 fuel/state/month observations**, AIP price history from 2004 through 2 October 2026, and national weekly MSO observations through 22 September 2026. Observation cutoffs shown in the app are authoritative after refresh. Capital-city terminal prices are not state-average prices; national stocks are not local-depot holdings.
+
+The original six government source files remain intact. Additional source files, hashes, retrieval/check times and status are in `data/market/source_manifest.json`; processed evidence is in `data/market/processed/`. Added price/stock measures supply recurring context. They are not yet fitted as predictors of monthly sales.
 
 | Source | Use and boundary |
 |---|---|
@@ -39,7 +51,7 @@ Financial years use their start year (`2023` means FY2023-24). Historical BITRE 
 
 ## Evaluation and limitations
 
-Fuel forecasts compare seasonal naive with additive Holt-Winters on expanding earlier windows: at least 60 training months, six-month horizons and six-month steps. The selected candidate is then evaluated on the untouched last six observed months and refitted on all available months to produce the next six. Candidate failure is recorded; the simple method is the operational fallback. Model selection does not use the last holdout error.
+Fuel forecasts compare seasonal naive with additive Holt-Winters on expanding earlier windows with at least 60 training months and six-month horizons. The retained combined-sales analysis uses six-month steps; FuelScope's separate petrol/diesel series use three-month steps. The selected candidate is then evaluated on the untouched last six observed months and refitted on all available months to produce the next six. Candidate failure is recorded; the simple method is the operational fallback. Model selection does not use the last holdout error.
 
 Approximate 80/95% bands use horizon-specific absolute historical forecast-error quantiles. Actual final-holdout coverage is disclosed in the interfaces and exports. The bands are not guaranteed probabilities; six holdout months and changing historical conditions cannot establish calibration. A forecast begins after the source cutoff, which may already precede today.
 
@@ -51,9 +63,9 @@ ACT is absent because the selected sales source has no separate ACT series. Per-
 
 ## Architecture and reproducibility
 
-`run_pipeline.py` performs source resolution → Silver parsing → Gold aggregation → EDA → chronological modelling → signed reconciliation → provenance → quality gate → SQLite publication → dashboard/diagrams/evidence generation. Missing source/product periods, incomplete population quarters and invalid core values are rejected. Source samples cannot be presented as a real-data release. Database publication is transactional; a tested interruption retains the prior snapshot.
+`run_pipeline.py` performs the existing validated transport pipeline and then builds fuel-specific market outlooks and interfaces from cached real public data. Market refresh is separate and explicit: official-page discovery → download to temporary files → schema/value/date checks → atomic cache replacement → evidence snapshot → dashboard. Invalid or older downloads retain the prior cache. Missing source/product periods, incomplete population quarters and invalid core values are rejected. Database publication is transactional.
 
-The static dashboard and Streamlit/API use the same briefing calculation and run identity. The database stores structured model results and run metadata, and its readers use one snapshot. SHA256 checks bind processed/model/diagnostic artifacts to a run before loading or building. Run identity includes raw-source hashes and relevant code/dependency-lock content; timestamps describe builds, not source observation dates.
+The retained transport dashboard and Streamlit/API use the same transport briefing calculation and historical run identity. The database stores structured model results and run metadata, and its readers use one snapshot. SHA256 checks bind processed/model/diagnostic artifacts to a run before loading or building. Run identity includes raw-source hashes and relevant code/dependency-lock content; timestamps describe builds, not source observation dates.
 
 | Output | Location |
 |---|---|
@@ -64,12 +76,15 @@ The static dashboard and Streamlit/API use the same briefing calculation and run
 | Source/run evidence | `data/bronze/_manifest.csv`, `reports/run_metadata.json` |
 | Structural quality, source age and descriptive KS drift | `reports/monitoring/drift_report.json` |
 | Technical results and sample exports | `reports/evaluation/technical_results.md`, `reports/briefings/` |
-| Current diagrams | `docs/architecture/architecture_v4.png`, `docs/workflow/workflow_v4.png` |
+| Current market diagrams | `docs/architecture/architecture_v5.png`, `docs/workflow/workflow_v5.png` |
+| Daily/weekly review evidence | `reports/market_review/snapshot.json`, `reports/market_review/technical_results.md` |
+
+The market snapshot has its own evidence and model identities plus a reference to the original historical run. The current sales backtest compares seasonal naive and Holt-Winters across 41 earlier rolling origins per fuel/state, then evaluates six held-out months. It uses the revised current extract; original historical publication vintages are not reconstructed. Adjacent evaluation windows overlap, and empirical error bands are not calibrated guarantees.
 
 The dependency lock describes the tested environment. CI is correctly located under `.github/workflows/ci.yml`; it rebuilds from tracked government files, tests, regenerates the dashboard and uploads outputs. A local successful run is not evidence of a completed remote CI run. SQLite is the tested default; PostgreSQL/Redshift deployment is not demonstrated here.
 
 ## PRT661 Assessment 3
 
-Use the [19-minute demo runbook](docs/assessment3/demo_runbook.md), [individual evidence guide](docs/assessment3/contribution_evidence_guide.md), and the editable presentation supplied in `docs/assessment3/`. The required submission remains a video of at most 20 minutes plus one PDF of exactly two pages per student (font size at least 10). Each student's second page needs one genuine screenshot of the specified Redshift Lab 2 with the lab name, mark and completion date/time, plus reflection.
+Use the current [19-minute FuelScope runbook](docs/assessment3/fuelscope_video_runbook.md) and [individual evidence guide](docs/assessment3/contribution_evidence_guide.md). The older v2 presentation in `docs/assessment3/presentation/` covers the retained transport analysis and needs revision before a FuelScope recording. The required submission remains a video of at most 20 minutes plus one PDF of exactly two pages per student (font size at least 10). Each student's second page needs one genuine screenshot of the specified Redshift Lab 2 with the lab name, mark and completion date/time, plus reflection.
 
 The team must still establish progress against its actual Assessment 2 submission, conduct genuine benefit evaluation, provide truthful personal evidence and record the presentation. See [the readiness audit](reports/project_audit_2026-10-03.md) for the original defects and rationale for this revision.

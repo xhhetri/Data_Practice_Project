@@ -1,8 +1,8 @@
 {
-  "run_id": "982d7cbfcc4474d3",
-  "built_at": "2026-10-03T10:38:50.605958+00:00",
-  "code_sha256": "942d33528d0796d7e884d03b554b3ac7451683cab1383951a7bfa3ef024c5e30",
-  "git_revision": "f8fb27fa8a1eb9eabbde80ab9121df71d9b97b3a",
+  "run_id": "a57380f681bc5405",
+  "built_at": "2026-10-04T03:28:57.529183+00:00",
+  "code_sha256": "aa274115f1dd32bd2477abf9fdf4a22ae1ce823f59d2aefd03dc29a8b1c461d3",
+  "git_revision": "a1c16b49a803ed8a6b7f714fabe01482234c577c",
   "sources": [
     {
       "source": "abs_population",
@@ -98,7 +98,7 @@
     "data/processed/monthly_fuel_series.csv": "376a0b3870cea5c04f6d718db6e5f1d00c7a6c85c8e256e675a83df645e84283",
     "data/processed/nsw_traffic_hourly.csv": "726c59d5a59922bbc28adaee408e3c140958b88ec3fcf380e0a9f1f7cf64cd0c",
     "reports/model_results/emissions_regression.pkl": "b98b18424c0336f444928de7637a7edb0b1318a0f73cc0111afc950f8580883a",
-    "reports/model_results/metrics.json": "ff247d87e9c8431d95c4bbc63473bc4f7194d4e8ed8235177dbfbacab90b54cd",
+    "reports/model_results/metrics.json": "3a9b4fca439e70c2016ad802aa8ab948220f032e61d869bfa3dc39318c6e7957",
     "reports/validation/emission_factor_check.csv": "04272f3d6882baaab56afd85a056366ac0c2108e59e55672dcffe7187d2642c1"
   }
 }

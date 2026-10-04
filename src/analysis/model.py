@@ -123,7 +123,7 @@ def evaluate_fuel_series(series: pd.Series, horizon: int = 6,
             'interval_method': 'Empirical absolute error quantiles by horizon from earlier rolling windows',
             'holdout_interval_coverage_pct': coverage,
             'interval_caveat': 'Approximate bands from a small, changing historical sample. '
-                               'Six-month holdout coverage is coarse; future shocks may fall outside bands.',
+                               f'{horizon}-month holdout coverage is coarse; future shocks may fall outside bands.',
             'series': {'train': _records(train.index, train), 'actual': _records(actual.index, actual),
                        'forecast': _records(actual.index, heldout), 'future': future_rows}}
 

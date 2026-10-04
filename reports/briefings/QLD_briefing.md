@@ -25,7 +25,7 @@ Method: holt_winters; selected using 21 earlier rolling windows.
 Untouched holdout MAPE: 5.68%.
 Same-holdout seasonal-naive baseline MAPE: 4.63%. This score is reported after selection; it does not choose the operational method.
 Holdout interval coverage: 80% band 50.0% and 95% band 100.0% across 6 months only.
-Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.
+Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.
 
 | Month | Sales ML | Approximate 95% band ML |
 |---|---:|---:|
@@ -46,8 +46,8 @@ Approximate bands from a small, changing historical sample. Six-month holdout co
 
 ## Sources and provenance
 
-Pipeline run: `982d7cbfcc4474d3`
-Built at: 2026-10-03T10:38:50.605958+00:00
+Pipeline run: `a57380f681bc5405`
+Built at: 2026-10-04T03:28:57.529183+00:00
 Observation cutoffs: {"annual_start": 2010, "annual_end": 2023, "sales_start": "2010-07-01", "sales_end": "2026-06-01", "annual_rows": 98, "monthly_rows": 1344}
 
 - [abs_population](https://www.abs.gov.au/statistics/people/population/national-state-and-territory-population/latest-release); file SHA256 `8fe4b1a1fc7d228e4e086214c5ecf8d5a8f3f1de803e107cb02bae0e1e5cc34f`

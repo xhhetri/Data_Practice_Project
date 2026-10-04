@@ -1,0 +1,53 @@
+{
+  "prices": {
+    "name": "AIP terminal gate prices",
+    "file": "aip-tgp.xlsx",
+    "cadence": "Weekdays",
+    "url": "https://aip.com.au/resources/historical-ulp-and-diesel-tgp-data/",
+    "download_url": "https://aip.com.au/wp-content/uploads/2026/09/AIP_TGP_Data_02-Oct-2026.xlsx",
+    "scope": "Major city terminals and published national average",
+    "unit": "cents/L, including GST",
+    "boundary": "Wholesale terminal benchmark; excludes delivery and retail-specific costs.",
+    "status": "unchanged",
+    "sha256": "02beec619266ffa78b6e7ad1c1b5eb83890cc7a4c31061a830e7de28bbdfee5e",
+    "retrieved_at": "2026-10-04T01:20:08.141288+00:00",
+    "observed_through": "2026-10-02",
+    "rows": 94992,
+    "changed": false,
+    "checked_at": "2026-10-04T03:20:48.882535+00:00"
+  },
+  "stocks": {
+    "name": "DCCEEW weekly MSO stocks",
+    "file": "mso-weekly.xlsx",
+    "cadence": "Weekly (temporary publication)",
+    "url": "https://www.dcceew.gov.au/energy/security/australias-fuel-security/minimum-stockholding-obligation/statistics",
+    "download_url": "https://www.dcceew.gov.au/sites/default/files/documents/mso-weekly-snapshot-timeseries.xlsx",
+    "scope": "National",
+    "unit": "ML and days equivalent",
+    "boundary": "National reported holdings under MSO; days equivalent are not a countdown to shortage.",
+    "status": "unchanged",
+    "sha256": "7399e25a2f0714c9a452297bd2b200cec024ebc3bae9d32382df1fa74f88a578",
+    "retrieved_at": "2026-10-04T01:20:07.515560+00:00",
+    "observed_through": "2026-09-22",
+    "rows": 93,
+    "changed": false,
+    "checked_at": "2026-10-04T03:20:49.216424+00:00"
+  },
+  "sales": {
+    "name": "Australian Petroleum Statistics",
+    "file": "aps-july-2026.xlsx",
+    "cadence": "Monthly",
+    "url": "https://www.energy.gov.au/publications/australian-petroleum-statistics-2026",
+    "download_url": "https://www.energy.gov.au/sites/default/files/2026-09/australian-petroleum-statistics-data-extract-july-2026.xlsx",
+    "scope": "Seven reported jurisdictions; national supply context",
+    "unit": "ML",
+    "boundary": "Petrol and total diesel sales separately; total diesel includes non-road uses. ACT has no separate series.",
+    "status": "unchanged",
+    "sha256": "d7b5d662a36e501cf3481c14e1a1a25bcd90b4afc5c496419f3a1ebf10e3ea51",
+    "retrieved_at": "2026-10-04T01:20:09.142842+00:00",
+    "observed_through": "2026-07-01",
+    "rows": 2702,
+    "changed": false,
+    "checked_at": "2026-10-04T03:20:52.448980+00:00"
+  }
+}

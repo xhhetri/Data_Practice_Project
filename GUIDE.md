@@ -1,5 +1,7 @@
 # Running and demonstrating the project
 
+FuelScope is the current daily/weekly demonstration. Start it with `Start-FuelScope.cmd` or follow [the current README](README.md), then use [the FuelScope recording runbook](docs/assessment3/fuelscope_video_runbook.md). The instructions below describe the retained transport analysis.
+
 Use Python 3.12 from the repository root. The raw government workbooks are tracked; this pipeline reads a fixed local snapshot rather than downloading live releases.
 
 ## Setup and build

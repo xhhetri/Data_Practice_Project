@@ -285,7 +285,7 @@
       "80": 83.33,
       "95": 83.33
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -1274,7 +1274,7 @@
       "80": 66.67,
       "95": 100.0
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -2263,7 +2263,7 @@
       "80": 50.0,
       "95": 100.0
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -3252,7 +3252,7 @@
       "80": 83.33,
       "95": 83.33
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -4241,7 +4241,7 @@
       "80": 66.67,
       "95": 100.0
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -5230,7 +5230,7 @@
       "80": 83.33,
       "95": 83.33
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -6219,7 +6219,7 @@
       "80": 100.0,
       "95": 100.0
     },
-    "interval_caveat": "Approximate bands from a small, changing historical sample. Six-month holdout coverage is coarse; future shocks may fall outside bands.",
+    "interval_caveat": "Approximate bands from a small, changing historical sample. 6-month holdout coverage is coarse; future shocks may fall outside bands.",
     "series": {
       "train": [
         {
@@ -7072,7 +7072,7 @@
     }
   },
   "_run": {
-    "run_id": "982d7cbfcc4474d3",
-    "code_sha256": "942d33528d0796d7e884d03b554b3ac7451683cab1383951a7bfa3ef024c5e30"
+    "run_id": "a57380f681bc5405",
+    "code_sha256": "aa274115f1dd32bd2477abf9fdf4a22ae1ce823f59d2aefd03dc29a8b1c461d3"
   }
 }
