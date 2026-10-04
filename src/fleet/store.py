@@ -53,6 +53,39 @@ def fingerprint(value):
     return hashlib.sha256(encoded(value).encode()).hexdigest()
 
 
+def normalise_purchase(payload, vehicles, timezone_name='Australia/Sydney', correction=False):
+    zone = ZoneInfo(timezone_name)
+    allowed = {'vehicle_id', 'occurred_at', 'litres', 'amount', 'odometer_km', 'tank_status', 'incomplete', 'reference', 'vendor', 'note'}
+    if set(payload) - allowed:
+        raise ValueError('Unexpected purchase fields.')
+    vehicle_id = text_value(payload.get('vehicle_id', ''), 'Vehicle', 64, True)
+    v = next((v for v in vehicles if v['id'] == vehicle_id), None)
+    if v is None or (v['archived'] and not correction):
+        raise ValueError('Select an active vehicle.')
+    raw_date = text_value(payload.get('occurred_at', ''), 'Transaction date', 40, True)
+    try:
+        date = datetime.fromisoformat(raw_date)
+        if date.tzinfo is not None:
+            date = date.astimezone(zone).replace(tzinfo=None)
+        if date.date() > datetime.now(zone).date():
+            raise ValueError
+        if date.year < 1900:
+            raise ValueError
+    except ValueError as error:
+        raise ValueError('Use a valid transaction date that is not in the future.') from error
+    status = payload.get('tank_status', 'unknown')
+    if status not in ('full', 'partial', 'unknown'):
+        raise ValueError('Tank status must be full, partial or unknown.')
+    odo = payload.get('odometer_km')
+    return dict(vehicle_id=vehicle_id, occurred_at=date.isoformat(timespec='seconds'), has_time=int('T' in raw_date or ' ' in raw_date),
+                litres=str(decimal_value(payload.get('litres'), 'Litres', maximum='10000')),
+                amount_cents=int(decimal_value(payload.get('amount'), 'Amount paid', places=2, maximum='1000000') * 100),
+                odometer_km=str(decimal_value(odo, 'Odometer', places=1, positive=False, maximum='10000000')) if odo not in (None, '') else None,
+                tank_status=status, incomplete=int(boolean(payload.get('incomplete', False), 'Missing purchases')),
+                reference=text_value(payload.get('reference', ''), 'Receipt reference'),
+                vendor=text_value(payload.get('vendor', ''), 'Vendor'), note=text_value(payload.get('note', ''), 'Note', 2000))
+
+
 class Repository:
     def __init__(self, path, timezone='Australia/Sydney'):
         self.path = Path(path)
@@ -189,35 +222,8 @@ class Repository:
         c.execute(f'UPDATE {table} SET {",".join(k+"=?" for k in keys)} WHERE id=?', tuple(value[k] for k in keys) + (value['id'],))
 
     def _purchase(self, c, payload, *, correction=False):
-        allowed = {'vehicle_id', 'occurred_at', 'litres', 'amount', 'odometer_km', 'tank_status', 'incomplete', 'reference', 'vendor', 'note'}
-        if set(payload) - allowed:
-            raise ValueError('Unexpected purchase fields.')
-        vehicle_id = text_value(payload.get('vehicle_id', ''), 'Vehicle', 64, True)
-        v = c.execute('SELECT * FROM vehicles WHERE id=?', (vehicle_id,)).fetchone()
-        if v is None or (v['archived'] and not correction):
-            raise ValueError('Select an active vehicle.')
-        raw_date = text_value(payload.get('occurred_at', ''), 'Transaction date', 40, True)
-        try:
-            date = datetime.fromisoformat(raw_date)
-            if date.tzinfo is not None:
-                date = date.astimezone(self.timezone).replace(tzinfo=None)
-            if date.date() > datetime.now(self.timezone).date():
-                raise ValueError
-            if date.year < 1900:
-                raise ValueError
-        except ValueError as error:
-            raise ValueError('Use a valid transaction date that is not in the future.') from error
-        status = payload.get('tank_status', 'unknown')
-        if status not in ('full', 'partial', 'unknown'):
-            raise ValueError('Tank status must be full, partial or unknown.')
-        odo = payload.get('odometer_km')
-        return dict(vehicle_id=vehicle_id, occurred_at=date.isoformat(timespec='seconds'), has_time=int('T' in raw_date or ' ' in raw_date),
-                    litres=str(decimal_value(payload.get('litres'), 'Litres', maximum='10000')),
-                    amount_cents=int(decimal_value(payload.get('amount'), 'Amount paid', places=2, maximum='1000000') * 100),
-                    odometer_km=str(decimal_value(odo, 'Odometer', places=1, positive=False, maximum='10000000')) if odo not in (None, '') else None,
-                    tank_status=status, incomplete=int(boolean(payload.get('incomplete', False), 'Missing purchases')),
-                    reference=text_value(payload.get('reference', ''), 'Receipt reference'),
-                    vendor=text_value(payload.get('vendor', ''), 'Vendor'), note=text_value(payload.get('note', ''), 'Note', 2000))
+        vehicles = [dict(v) for v in c.execute('SELECT * FROM vehicles')]
+        return normalise_purchase(payload, vehicles, self.timezone.key, correction)
 
     def _save(self, c, payload, request_id):
         request_id = text_value(request_id, 'Save request', 128, True)
@@ -258,7 +264,7 @@ class Repository:
             self._event(c, 'purchase', record_id, 'void' if void else 'restore', before, after)
             return after
 
-    def import_rows(self, rows, batch_id):
+    def import_rows(self, rows, batch_id, expected_snapshot=None):
         batch_id = text_value(batch_id, 'Import batch', 128, True)
         identity = fingerprint(rows)
         with self.connection(True) as c:
@@ -268,6 +274,12 @@ class Repository:
                     raise ValueError('This import batch was already used for different data.')
                 ids = json.loads(old['purchase_ids'])
                 return [dict(c.execute('SELECT * FROM purchases WHERE id=?', (i,)).fetchone()) for i in ids]
+            if expected_snapshot is not None:
+                current = fingerprint(dict(
+                    vehicles=sorted(tuple(r) for r in c.execute('SELECT id,revision,archived FROM vehicles')),
+                    purchases=sorted(tuple(r) for r in c.execute('SELECT id,revision,void FROM purchases'))))
+                if current != expected_snapshot:
+                    raise ValueError('The workspace changed after preview. Preview the file again.')
             saved = [self._save(c, row, f'import:{batch_id}:{index}') for index, row in enumerate(rows)]
             self._insert(c, 'imports', dict(id=batch_id, payload_hash=identity,
                 purchase_ids=encoded([r['id'] for r in saved]), at_utc=datetime.now(timezone.utc).isoformat()))
