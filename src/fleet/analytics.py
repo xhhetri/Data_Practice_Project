@@ -164,7 +164,19 @@ def scenario(km, rate, prices):
                 caveat='Calculated from your distance, fuel-rate and price assumptions. These scenarios are not statistical forecasts or guaranteed future costs.')
 
 
+def observed_rate(records):
+    intervals = efficiency_intervals(records)['intervals']
+    distance = sum((D(i['distance_km']) for i in intervals), D(0))
+    volume = sum((D(i['litres']) for i in intervals), D(0))
+    return str(volume / distance * 100) if distance else None
+
+
 def render_weekly_report(review, vehicles=(), reviews=()):
+    # Downloads may be rendered by Markdown readers with remote images/HTML enabled.
+    import html
+    import re
+    def plain(value):
+        return re.sub(r'([\\`*_{}\[\]()#!|])', r'\\\1', html.escape(str(value))).replace('\n', ' ')
     names = {v['id']: v['name'] for v in vehicles}
     outcomes = {r['id']: r for r in reviews}
     money = lambda cents: f'AUD {D(cents)/100:,.2f}'
@@ -182,11 +194,11 @@ def render_weekly_report(review, vehicles=(), reviews=()):
         lines += ['No rules flagged the supplied records for this period. This does not establish completeness or absence of problems.']
     for item in r['exceptions']:
         outcome = outcomes.get(item['id'], {})
-        lines += [f"- {names.get(item['vehicle_id'], item['vehicle_id'])}: {item['message']}",
-                  f"  Evidence records: {', '.join(item['source_ids'])}; outcome: {outcome.get('status', 'open')}; {outcome.get('note', '')}"]
+        lines += [f"- {plain(names.get(item['vehicle_id'], item['vehicle_id']))}: {item['message']}",
+                  f"  Evidence records: {', '.join(item['source_ids'])}; outcome: {plain(outcome.get('status', 'open'))}; {plain(outcome.get('note', ''))}"]
     lines += ['', '## Supported efficiency intervals', '']
     for i in r['intervals']:
-        lines += [f"- {names.get(i['vehicle_id'], i['vehicle_id'])}: {i['start']} to {i['end']}, {D(i['rate_l_per_100km']):.2f} L/100 km over {i['distance_km']} km."]
+        lines += [f"- {plain(names.get(i['vehicle_id'], i['vehicle_id']))}: {i['start']} to {i['end']}, {D(i['rate_l_per_100km']):.2f} L/100 km over {i['distance_km']} km."]
     for w in r['warnings']:
         lines += [f"- Efficiency withheld: {w['reason']} ({w['start']} to {w['end']})."]
     lines += ['', 'Review flags are prompts to inspect records, not diagnoses, fraud findings or demonstrated savings.']

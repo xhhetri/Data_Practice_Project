@@ -285,7 +285,7 @@ class Repository:
                 purchase_ids=encoded([r['id'] for r in saved]), at_utc=datetime.now(timezone.utc).isoformat()))
             return saved
 
-    def save_review(self, payload):
+    def save_review(self, payload, expected_updated_at=None):
         allowed = {'id', 'status', 'note', 'refund_amount', 'refund_reference'}
         if set(payload) - allowed or payload.get('status') not in STATUSES:
             raise ValueError('Select a valid review outcome.')
@@ -298,6 +298,8 @@ class Repository:
                       refund_reference=reference, updated_at=datetime.now(timezone.utc).isoformat())
         with self.connection(True) as c:
             old = c.execute('SELECT * FROM reviews WHERE id=?', (result['id'],)).fetchone()
+            if (old['updated_at'] if old else None) != expected_updated_at:
+                raise ValueError('This review changed in another session. Reload the review before saving.')
             if old:
                 self._replace(c, 'reviews', result)
             else:

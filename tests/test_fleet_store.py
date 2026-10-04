@@ -94,3 +94,15 @@ def test_database_schema_version_and_foreign_keys(tmp_path):
     from src.fleet.store import Repository
     with pytest.raises(ValueError, match='version'):
         Repository(repo.path)
+
+
+def test_concurrent_review_outcome_rejects_stale_update(tmp_path):
+    repo = repository(tmp_path)
+    first = repo.save_review(dict(id='finding', status='open'), expected_updated_at=None)
+    second = repo.save_review(dict(id='finding', status='explained', note='Checked receipt'),
+                              expected_updated_at=first['updated_at'])
+    with pytest.raises(ValueError, match='changed'):
+        repo.save_review(dict(id='finding', status='follow-up needed'), expected_updated_at=first['updated_at'])
+    assert repo.reviews() == [second]
+    with pytest.raises(ValueError, match='changed'):
+        repo.save_review(dict(id='finding', status='open'), expected_updated_at=None)

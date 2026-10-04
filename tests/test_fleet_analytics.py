@@ -90,3 +90,20 @@ def test_scenarios_are_explicit_assumptions_and_reject_invalid_values():
     for value in ('-1', 'NaN', 'Infinity'):
         with pytest.raises(ValueError):
             scenario(value, '8', ['2'])
+
+
+def test_observed_scenario_rate_is_distance_weighted():
+    from src.fleet.analytics import observed_rate
+    rows = [row(1, '2024-01-01', 1000), row(2, '2024-01-08', 1400, '32'), row(3, '2024-01-15', 2000, '72')]
+    assert Decimal(observed_rate(rows)) == Decimal('10.4')
+    assert observed_rate([]) is None
+
+
+def test_report_treats_user_text_as_text_not_remote_markdown_content():
+    from src.fleet.analytics import weekly_review, render_weekly_report
+    records = [row(1, '2024-01-01', 1000, reference='same'), row(2, '2024-01-08', 1500, reference='same')]
+    review = weekly_review(records, [], date(2024, 1, 8), date(2024, 1, 14))
+    content = render_weekly_report(review, [dict(id='v', name='![Van](https://external.example/image)')],
+        [dict(id=review['exceptions'][0]['id'], status='explained', note='<img src="https://external.example/note">')])
+    assert '![Van](' not in content
+    assert '<img ' not in content
