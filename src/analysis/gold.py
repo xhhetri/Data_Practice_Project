@@ -27,6 +27,16 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 log = logging.getLogger(__name__)
 
 
+def _complete_product_sales():
+    fuel = load_petroleum_statistics()
+    products = fuel.groupby(['state', 'date'])['product'].agg(set)
+    if fuel.duplicated(['state', 'date', 'product']).any() or not products.map(lambda p: p == {'Gasoline', 'Diesel oil'}).all():
+        raise ValueError('Fuel sales require exactly one Gasoline and one Diesel oil record in every state-month')
+    if not fuel.consumption_ml.gt(0).all():
+        raise ValueError('Fuel sales must be positive')
+    return fuel
+
+
 def build_annual_master() -> pd.DataFrame:
     """
     State x financial-year table. Every source below reports on an
@@ -35,13 +45,16 @@ def build_annual_master() -> pd.DataFrame:
     A financial year is labelled by its start calendar year throughout
     (e.g. "2020" means FY2020-21).
 
-    registered_vehicles is a special case: the real source is a current
-    fleet snapshot by manufacture year, not an annual time series, so
-    it's broadcast as a constant per state across every year rather than
-    genuinely varying year to year -- see silver.load_vehicle_registrations().
+    registered_vehicles is historical BITRE calendar-year stock associated
+    with the FY starting in that year, an approximate alignment, not a FY mean.
     """
+    fuel_raw = _complete_product_sales()
+    periods = fuel_raw.groupby(["state", "fy_year", "product"])["month"].nunique()
+    complete = periods.groupby(level=[0, 1]).min()
+    valid = complete[complete == 12].reset_index()[["state", "fy_year"]]
+    fuel_raw = fuel_raw.merge(valid, on=["state", "fy_year"], validate="many_to_one")
     fuel = (
-        load_petroleum_statistics()
+        fuel_raw
         .groupby(["state", "fy_year"], as_index=False)["consumption_ml"]
         .sum()
         .rename(columns={"consumption_ml": "fuel_consumption_ml", "fy_year": "year"})
@@ -67,28 +80,13 @@ def build_annual_master() -> pd.DataFrame:
     )
 
     veh_raw = load_vehicle_registrations()
-    if "year" in veh_raw.columns:
-        vehicles = (
-            veh_raw.groupby(["state", "year"], as_index=False)["count"]
-            .sum()
-            .rename(columns={"count": "registered_vehicles"})
-        )
-        master = master.merge(vehicles, on=["state", "year"], how="inner")
-    else:
-        log.warning(
-            "vehicle_registrations has no 'year' column (it's a "
-            "manufacture-year fleet snapshot, not an annual time series) "
-            "-- broadcasting each state's current total fleet size across "
-            "all years instead. This feature does NOT vary within a "
-            "state across years -- keep that in mind interpreting any "
-            "feature-importance result for it."
-        )
-        current_fleet = (
-            veh_raw.groupby("state", as_index=False)["count"]
-            .sum()
-            .rename(columns={"count": "registered_vehicles"})
-        )
-        master = master.merge(current_fleet, on="state", how="inner")
+    if "year" not in veh_raw:
+        raise ValueError("Annual analysis requires historical fleet stock, not a snapshot")
+    vehicles = veh_raw.groupby(["state", "year"], as_index=False)["count"].sum()
+    vehicles = vehicles.rename(columns={"count": "registered_vehicles"})
+    master = master.merge(vehicles, on=["state", "year"], how="inner", validate="one_to_one")
+    if master.empty or master.duplicated(["state", "year"]).any():
+        raise ValueError("Empty or duplicate annual state-year table")
 
     log.info("Gold: annual_master -- %d rows (%d states x %d years, %s to %s)",
               len(master), master["state"].nunique(), master["year"].nunique(),
@@ -103,13 +101,20 @@ def build_annual_master_with_population() -> pd.DataFrame:
     every other source (see silver.load_population()'s fy_year column).
     """
     base = build_annual_master()
+    population = load_population()
+    required = base[['state', 'year']].rename(columns={'year': 'fy_year'})
+    quarters = population.merge(required, on=['state', 'fy_year'], how='inner', validate='many_to_one')
+    counts = quarters.groupby(['state', 'fy_year'])['quarter'].agg(lambda q: set(q) == {1, 2, 3, 4})
+    if (quarters.duplicated(['state', 'fy_year', 'quarter']).any() or
+            len(counts) != len(base) or not counts.all() or not quarters.population.gt(0).all()):
+        raise ValueError('Every annual briefing row requires four unique positive population quarters')
     pop = (
-        load_population()
+        quarters
         .groupby(["state", "fy_year"], as_index=False)["population"]
         .mean()  # average of the quarters within that financial year
         .rename(columns={"fy_year": "year"})
     )
-    merged = base.merge(pop, on=["state", "year"], how="inner")
+    merged = base.merge(pop, on=["state", "year"], how="left", validate='one_to_one')
     merged["emissions_per_capita_kg"] = (
         merged["ghg_kt_co2e"] * 1_000_000 / merged["population"]
     )
@@ -123,9 +128,9 @@ def build_annual_master_with_population() -> pd.DataFrame:
 
 
 def build_monthly_fuel_series() -> pd.DataFrame:
-    """State x month petroleum consumption -- the time-series forecasting
+    """State x month petrol plus total diesel SALES -- the time-series forecasting
     target (see model.py: forecast_fuel_consumption)."""
-    df = load_petroleum_statistics()
+    df = _complete_product_sales()
     monthly = (
         df.groupby(["state", "date"], as_index=False)["consumption_ml"]
         .sum()
