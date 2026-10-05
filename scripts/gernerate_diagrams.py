@@ -1,113 +1,65 @@
-
-
-from __future__ import annotations
-
-import json
+"""Render the actual architecture and user workflow for the demonstration."""
+import sys
 from pathlib import Path
-
-import pandas as pd
-
-REPO_ROOT = Path(__file__).resolve().parents[1]
-PROCESSED_DIR = REPO_ROOT / "data" / "processed"
-RESULTS_DIR = REPO_ROOT / "reports" / "model_results"
-VALIDATION_DIR = REPO_ROOT / "reports" / "validation"
-DASHBOARD_DIR = REPO_ROOT / "dashboard"
-TEMPLATE_PATH = DASHBOARD_DIR / "template.html"
-OUTPUT_PATH = DASHBOARD_DIR / "index.html"
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
 
 
-def _require(path: Path, hint: str) -> None:
-    if not path.exists():
-        raise FileNotFoundError(
-            f"{path} not found. {hint}"
-        )
+def diagram(path, title, rows):
+    fig, ax = plt.subplots(figsize=(13, 9))
+    ax.axis('off')
+    ax.set_title(title, fontsize=18, weight='bold', pad=25)
+    for index, text in enumerate(rows):
+        y = 1 - (index + .6) / len(rows)
+        ax.text(.5, y, text, ha='center', va='center', fontsize=12,
+                bbox={'boxstyle': 'round,pad=.7', 'facecolor': '#e8f2f4', 'edgecolor': '#286c76'})
+        if index < len(rows)-1:
+            ax.annotate('', xy=(.5, y-.085), xytext=(.5, y-.045),
+                        arrowprops={'arrowstyle': '->', 'color': '#286c76'})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path, dpi=160, bbox_inches='tight')
+    plt.close(fig)
 
 
-def build_data() -> dict:
-    _require(PROCESSED_DIR / "annual_master.csv",
-              "Run `python run_pipeline.py` first.")
-    _require(RESULTS_DIR / "metrics.json",
-              "Run `python run_pipeline.py` first.")
-
-    annual = pd.read_csv(PROCESSED_DIR / "annual_master.csv")
-    annual_pop = pd.read_csv(PROCESSED_DIR / "annual_master_with_population.csv")
-    monthly = pd.read_csv(PROCESSED_DIR / "monthly_fuel_series.csv")
-    metrics = json.loads((RESULTS_DIR / "metrics.json").read_text())
-
-    states = sorted(annual["state"].unique().tolist())
-
-    def group_by_state(df: pd.DataFrame, cols: list[str]) -> dict:
-        out = {}
-        for state, grp in df.groupby("state"):
-            grp = grp.sort_values(grp.columns[1] if "year" not in grp.columns else "year")
-            out[state] = grp[cols].to_dict("records")
-        return out
-
-    annual_cols = ["year", "fuel_consumption_ml", "vkt_road_million_km",
-                    "registered_vehicles", "ghg_kt_co2e"]
-    per_capita_cols = ["year", "emissions_per_capita_kg", "vkt_per_capita_km",
-                        "vehicles_per_capita", "population"]
-    monthly_cols = ["date", "consumption_ml"]
-
-    data = {
-        "meta": {
-            "states": states,
-            "year_min": int(annual["year"].min()),
-            "year_max": int(annual["year"].max()),
-        },
-        "annual": group_by_state(annual, annual_cols),
-        "per_capita": group_by_state(annual_pop, per_capita_cols),
-        "monthly_fuel": group_by_state(monthly, monthly_cols),
-        "regression": {
-            k: v for k, v in metrics.get("emissions_regression", {}).items()
-        },
-        "forecasts": {},
-        "validation": None,
-    }
-
-    for state in states:
-        key = f"fuel_forecast_{state}"
-        if key in metrics:
-            f = metrics[key]
-            data["forecasts"][state] = {
-                "method": f["method"],
-                "mae_ml": f["mae_ml"],
-                "mape_pct": f["mape_pct"],
-                "series": f["series"],
-            }
-
-    val_path = VALIDATION_DIR / "emission_factor_check.csv"
-    if val_path.exists():
-        val = pd.read_csv(val_path)
-        data["validation"] = {
-            "rows": val[["state", "year", "implied_kt_co2e", "ghg_kt_co2e", "pct_diff"]]
-                .round(2).to_dict("records"),
-            "mean_pct_diff": round(val["pct_diff"].mean(), 1),
-        }
-
-    return data
+def run():
+    diagram(ROOT/'docs/architecture/architecture_v5.png', 'FuelScope — implemented evidence architecture', [
+        'Original six government source files → validated transport pipeline\nRetained annual analysis, Gold warehouse and historical run identity',
+        'AIP weekday prices + DCCEEW weekly MSO + current petroleum extract\nExplicit refresh → temporary download → schema, value and date checks',
+        'Validated market cache + source manifest\nObservation cutoffs, retrieval dates, source hashes and failed-feed retention',
+        'Separate petrol/diesel state sales → seasonal naive vs Holt-Winters\n41 earlier rolling origins → untouched six-month holdout → refit outlook',
+        'Market evidence snapshot + model identity\nNational stocks stay national; city prices and state sales remain distinct',
+        'FuelScope browser dashboard + loopback refresh service\nCached daily/weekly context • monthly outlook • retained transport analysis',
+        'Analyst review → local checkpoint and notes → cited Markdown/CSV/print\nAssessment 4: added predictors and real repeated-use evaluation'])
+    diagram(ROOT/'docs/workflow/workflow_v5.png', 'FuelScope — daily check and weekly briefing workflow', [
+        'Open the workspace → select jurisdiction and petrol/diesel',
+        'Check official source updates; retain prior evidence if a feed fails',
+        'Daily: inspect dated wholesale-price changes and the source',
+        'Weekly: inspect national holdings, effective obligation and source age',
+        'On sales release: inspect fuel-specific outlook and baseline performance',
+        'Record questions and interpretation → export a cited briefing',
+        'Save a browser checkpoint → next visit compare actual evidence changes',
+        'Assessment 4: evaluate review time, interpretation and voluntary return'])
+    diagram(ROOT/'docs/architecture/architecture_v4.png', 'Australian transport briefing tool — actual architecture', [
+        'Government workbooks → Bronze source manifest\nOfficial URLs, file hashes, explicit boundaries',
+        'Silver: typed source tables in Parquet\nHistorical BITRE stock • monthly fuel SALES • whole-transport inventories',
+        'Gold: annual state/FY table + population • monthly sales series\nCompleteness checks • documented calendar-year stock alignment',
+        'EDA + chronological regression + rolling fuel forecast evaluation\nUntouched holdout • beyond-cutoff outlook • empirical uncertainty',
+        'Signed reconciliation + hashed provenance → quality gate → SQLite\nRejected data retain the prior database snapshot',
+        'Shared briefing calculations → Streamlit / FastAPI\nSame pipeline artifacts → standalone HTML dashboard',
+        'Analyst selects state and period → comparison → cited briefing export\nMonitoring: completeness, cutoff age and pooled distribution diagnostics'])
+    diagram(ROOT/'docs/workflow/workflow_v4.png', 'Analyst and development workflow', [
+        'Download and retain government sources; document origin and boundary',
+        'Run the pipeline → validate sources → clean → analyze → evaluate',
+        'Reconcile boundaries → bind run → quality gate → publish SQLite → build interfaces',
+        'Analyst: select jurisdiction and financial-year range',
+        'Read total and per-capita changes → compare peers → inspect limits',
+        'Inspect beyond-cutoff sales outlook → export briefing and selected data',
+        'Evaluate task time, accuracy and traceability against manual workflow',
+        'Review code, run tests and CI → record individual contribution evidence'])
 
 
-def build_html(data: dict) -> str:
-    _require(TEMPLATE_PATH, "template.html should be committed alongside this script.")
-    template = TEMPLATE_PATH.read_text()
-    data_json = json.dumps(data, indent=None)
-    if "/*__DASHBOARD_DATA__*/" not in template:
-        raise ValueError("template.html is missing the /*__DASHBOARD_DATA__*/ placeholder")
-    return template.replace("/*__DASHBOARD_DATA__*/", f"const DATA = {data_json};")
-
-
-def run() -> None:
-    data = build_data()
-    html = build_html(data)
-    OUTPUT_PATH.write_text(html)
-    size_kb = OUTPUT_PATH.stat().st_size / 1024
-    print(f"Wrote {OUTPUT_PATH} ({size_kb:.0f} KB) -- "
-          f"{len(data['meta']['states'])} states, "
-          f"{data['meta']['year_min']}-{data['meta']['year_max']}, "
-          f"{len(data['forecasts'])} forecasts, "
-          f"validation: {'included' if data['validation'] else 'skipped (no file)'}")
-
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     run()
