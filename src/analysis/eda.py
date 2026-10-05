@@ -79,7 +79,7 @@ def plot_state_trends(annual: pd.DataFrame) -> None:
         ax.plot(grp["year"], grp[TARGET_COL], marker="o", label=state)
     year_min, year_max = int(annual["year"].min()), int(annual["year"].max())
     ax.set_title(f"Transport-sector GHG emissions by state, {year_min}-{year_max}")
-    ax.set_xlabel("Year")
+    ax.set_xlabel("Financial year start")
     ax.set_ylabel("kt CO2-e")
     ax.legend(ncol=2, fontsize=8)
     fig.tight_layout()
@@ -101,8 +101,8 @@ def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
     correctly, not anything about real relationships. On real data,
     expect fuel/VKT/vehicles to correlate strongly with emissions
     (R^2 close to 1) -- that's the expected accounting-identity
-    structure (emissions are *constructed from* fuel sales via published
-    factors), not a genuine predictive finding to celebrate uncritically.
+    relationships and state size. Sales and inventories have different
+    boundaries; correlation is not a validated conversion or causal finding.
     """
     corr = annual[FEATURE_COLS + [TARGET_COL]].corr()
     fig, ax = plt.subplots(figsize=(7, 6))
@@ -124,7 +124,7 @@ def plot_correlation_heatmap(annual: pd.DataFrame) -> None:
 
 
 def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame) -> None:
-    """Monthly fuel consumption, one panel per state -- the forecasting
+    """Monthly petrol plus total diesel sales, one panel per state -- the forecasting
     target. Independent y-axis scales per panel (not shared) since fuel
     volumes differ by an order of magnitude between the largest states
     (NSW, VIC) and the smallest (NT, TAS) -- a shared scale would flatten
@@ -142,7 +142,7 @@ def plot_monthly_fuel_series(monthly_fuel: pd.DataFrame) -> None:
         ax.set_ylabel("ML")
     for ax in axes[n:]:
         ax.axis("off")  # hide any unused grid cells (7 states, 8 grid slots)
-    fig.suptitle("Monthly petroleum consumption by state")
+    fig.suptitle("Monthly petrol + total diesel SALES by state")
     fig.tight_layout()
     out = FIGURES_DIR / "04_monthly_fuel_by_state.png"
     fig.savefig(out, dpi=150)
