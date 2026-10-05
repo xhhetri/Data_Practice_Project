@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-and-run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r requirements-lock.txt
+
+      - name: Run full pipeline on tracked government data
+        run: python run_pipeline.py
+
+      - name: Run test suite and verify regenerated dashboard
+        run: |
+          python -m pytest tests/ -v
+          python scripts/build_dashboard.py
+          node tests/check_dashboard_exports.mjs
+          node tests/check_market_dashboard.mjs
+
+      - name: Upload generated reports as a build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: pipeline-outputs
+          path: |
+            data/processed/
+            data/gold/
+            reports/
+            dashboard/index.html
+            dashboard/transport.html
+            dashboard/plotly.min.js
+            docs/architecture/architecture_v4.png
+            docs/architecture/architecture_v5.png
+            docs/workflow/workflow_v4.png
+            docs/workflow/workflow_v5.png
+          retention-days: 14
