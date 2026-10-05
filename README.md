@@ -1,450 +1,90 @@
+# FuelScope: Australian fuel-market review
 
-# AI-Powered Decision Support System — Transport Emissions (Australia)
+An analyst workspace for **daily wholesale-price checks and weekly fuel-market briefings**. Choose a jurisdiction and fuel, inspect dated price and national-stock changes, evaluate the separate petrol/diesel sales outlook, save a local review checkpoint and export a cited briefing. The original transport/emissions analysis remains available through the dashboard's link and Streamlit.
 
-Predictive analytics on Australian transport-sector emissions, built
-from seven public government datasets: cleaning, EDA, and
-forecasting/regression models over a single, flat pipeline.
+The intended benefit is faster, more accurate recurring review. Actual adoption and time savings are **not yet demonstrated by participant research**. The [market-review pilot](docs/evaluation/market_review_pilot.md) defines the Assessment 4 evaluation. Statistical changes are investigation prompts, not shortage forecasts or policy effects.
 
-> **Scope note:** this project was originally framed as "road transport
-> emissions." The published state-level emissions data only breaks down
-> to whole transport sector (road + rail + domestic aviation + shipping
-> combined) — there's no further mode split at that granularity in the
-> real data. Rather than claim road-specific results the data can't
-> support, the project's scope was renamed to match what's actually
-> measurable. See [CHANGELOG.md](./CHANGELOG.md) for the full reasoning.
+## Use it
 
-## Status
+On Windows, double-click **Start-FuelScope.cmd**, or start the local review service:
 
-**Real government data is loaded and verified working.** All 7 sources
-in scope currently resolve to real downloaded files (see
-[Data sources](#data-sources)).
-
-**Implemented and verified end-to-end:**
-
-- Data loading + cleaning for all 7 sources, real-file-aware
-  (`src/analysis/clean.py`)
-- Merged, analysis-ready tables (annual state-level, monthly fuel series)
-- Exploratory data analysis — 6 figures (`src/analysis/eda.py`)
-- Two models — annual emissions regression, monthly fuel forecast
-  (`src/analysis/model.py`)
-- Data quality validation — emission-factor cross-check
-  (`src/analysis/validate.py`)
-- 24 automated tests (`tests/test_clean.py`, run with `pytest tests/`)
-- CI on every push/PR (`.github/workflows/ci.yml`)
-- Single command to run the whole pipeline (`run_pipeline.py`)
-- Architecture and workflow diagrams (`docs/`)
-
-**Also implemented (added on top of the simplified pipeline above):**
-
-- A real DBMS "Gold" layer — `src/db.py` loads every processed table
-  plus flattened model metrics into SQLite (or Postgres, via
-  `DATABASE_URL`) — see [Database](#database-gold-layer) below.
-- An interactive Streamlit dashboard and a FastAPI scoring endpoint —
-  see [Deployment](#deployment) below. `dashboard/index.html` (the
-  static, no-server dashboard) stays as-is; these are additional,
-  live/served surfaces.
-- Lightweight data-drift monitoring (`monitoring/monitor.py`) — see
-  [Monitoring](#monitoring--data-drift) below.
-
-This intentionally revisits one item from the "explicitly out of scope"
-list below (a DBMS layer, a dashboard app, and an API) in a form sized
-for a 4-person student project — one file each, not a layered
-warehouse — rather than reinstating the original, more complex
-Bronze/Silver/Gold architecture the CHANGELOG explains was removed.
-
-**Still explicitly out of scope** — see [CHANGELOG.md](./CHANGELOG.md) for why:
-
-- The original layered Bronze/Silver/Gold connector architecture
-  (`src/ingest/*.py`, `BaseConnector`, a Silver Parquet layer) — still
-  descoped; the DBMS/dashboard/API added above are new, simpler
-  implementations, not a revival of that old code.
-- **National GHG Accounts OData API and NSW Traffic Volume Counts** —
-  descoped. Never had a real data pull wired in; removed from the
-  pipeline, tests, and diagrams rather than kept as an undocumented
-  half-feature. Not a gap to fill later — a deliberate scope decision.
-
-## What running on real data actually showed
-
-The regression (fuel + VKT + vehicles → transport-sector emissions)
-scores **CV R² ≈ 0.995** on real data. That is expected, not a triumph
-to celebrate uncritically: state emissions inventories are *constructed
-from* fuel sales via published NGA emission factors, so a near-perfect
-score here mostly reflects that accounting identity, not a novel
-predictive insight.
-
-The **fuel forecast** is the model actually worth trusting: MAPE ≈3.8%
-on real monthly petroleum sales, since Holt-Winters is fitting genuine
-seasonal structure.
-
-## Quick start
-
-```bash
-python -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env    # local config -- see .env.example for what each value does
-
-pytest tests/           # 30 tests, ~3-4 min
-python run_pipeline.py  # clean -> EDA -> model -> validate -> load into DBMS
+```powershell
+.venv\Scripts\python.exe -m scripts.serve_review --port 8766
 ```
 
-For the full walkthrough (venv, `.env`, running the dashboard/API,
-monitoring, and which other tools to install), see
-[GUIDE.md](./GUIDE.md).
+Open **http://127.0.0.1:8766/**. Use **Check for updates** to check the official publication pages; validated caches remain available if a feed fails. Nothing downloads automatically on page load. Wholesale prices update on working days; weekly MSO publication is currently temporary; monthly sales retain their reporting lag.
 
-Outputs land in:
+The [standalone dashboard](dashboard/index.html) also works offline with its adjacent `plotly.min.js`. Its refresh control explains how to open the local service. Notes, selected jurisdiction/fuel and a review checkpoint are stored only in this browser. Markdown and evidence CSV downloads work offline; **Print / save PDF** opens the browser's print workflow.
 
-| Output                   | Location                                           |
-| ------------------------ | -------------------------------------------------- |
-| Cleaned, merged tables   | `data/processed/*.csv`                           |
-| EDA figures              | `reports/figures/*.png`                          |
-| Model metrics (JSON)     | `reports/model_results/metrics.json`             |
-| Trained regression model | `reports/model_results/emissions_regression.pkl` |
-| Data quality checks      | `reports/validation/*.csv`, `*.png`            |
+The [original transport dashboard](dashboard/transport.html), [original technical results](reports/evaluation/technical_results.md), and [market model results](reports/market_review/technical_results.md) remain directly readable.
 
-Every pipeline run logs, per source, whether it used real data or a
-fixture — check this before citing any number:
+Rebuild with Python 3.12 and the tracked government files:
 
-```
-INFO: Using real data for 'petroleum_statistics': data/bronze/Australian Petroleum statistics consumption cover/...
+```powershell
+python -m venv .venv
+.venv\Scripts\python.exe -m pip install -r requirements-lock.txt
+.venv\Scripts\python.exe run_pipeline.py
+.venv\Scripts\python.exe -m pytest tests/ -q
+.venv\Scripts\python.exe -m scripts.serve_review --port 8766
 ```
 
-## Data sources
-
-| # | Source                                                   | Loader                           | Used by                                                                             |
-| - | -------------------------------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------- |
-| 1 | Australian Petroleum Statistics                          | `load_petroleum_statistics()`  | annual master, monthly forecast, validation                                         |
-| 2 | State & Territory GHG Inventories (Emission Data Tables) | `load_state_territory_ghg()`   | annual master (regression target), validation                                       |
-| 3 | National GHG Accounts Factors 2025                       | `load_nga_factors()`           | validation (emission-factor check)                                                  |
-| 4 | BITRE Yearbook 2025 (VKT)                                | `load_bitre_yearbook()`        | annual master                                                                       |
-| 5 | Registered Road Vehicles                                 | `load_vehicle_registrations()` | annual master (genuine annual series, sourced from the BITRE Yearbook — see below) |
-| 6 | Quarterly GHG Update                                     | `load_quarterly_ghg_update()`  | loaded, not merged — no state dimension exists in this source                      |
-| 7 | ABS Population (ERP)                                     | `load_population()`            | annual master with population                                                       |
-
-Note: source 5's real data comes from the *same physical file* as
-source 4 (the BITRE Yearbook workbook) — `Table 4.3` for VKT, `Table 4.6b` (inside the combined `Table 4.6a-c` sheet) for vehicle stock by
-state. `load_vehicle_registrations()` locates the `bitre_yearbook` file
-directly rather than a separate `vehicle_registrations` file for this
-reason.
-
-All real files currently live under human-named folders (whatever the
-person who downloaded them called it), not the canonical `source_name`
-keys — e.g. `data/bronze/Australian Petroleum statistics consumption cover/`. `clean.py`'s `BRONZE_FOLDER_ALIASES` maps every folder name
-we've seen used to its canonical source; add to that dict if a new
-folder name shows up rather than renaming folders to match.
-
-## Real-data caveats — read before writing these into the report
-
-1. **Emissions = whole transport sector, not road-only** — the reason
-   for the project rename. The Emission Data Tables' finest state-level
-   breakdown is `"3. Transport"` — road + rail + domestic aviation +
-   shipping combined. No further mode split exists at state level in
-   this published source.
-2. **ACT has no state-level fuel sales data.** Confirmed against the raw
-   source file's own `State` column — not a parsing gap. `annual_master`
-   covers 7 states, not 8.
-3. **The emission-factor validation gap (~30%) is expected.**
-   `validate_emission_factors()` compares *road-fuel-only* implied
-   emissions against the *whole-transport-sector* reported figure (see
-   caveat 1) — implied should run lower, roughly in proportion to
-   road's share of transport fuel use.
-
-## Analysis-ready tables
-
-Built by `clean.py`, aligned to Australian financial year (labelled by
-its start year, e.g. "2020" = FY2020-21):
-
-- **`annual_master.csv`** — fuel consumption, road VKT, registered
-  vehicles, and transport-sector emissions (the regression target).
-  Currently 98 rows: 7 states × 2010–2023.
-- **`annual_master_with_population.csv`** — adds population and
-  per-capita features.
-- **`monthly_fuel_series.csv`** — the fuel forecasting target, ~190
-  monthly points per state.
-
-## Models
-
-**`fit_emissions_regression()`** — linear regression and random
-forest, 5-fold cross-validated. Reports CV R², CV MAE, and random-forest
-feature importances.
-
-**`forecast_fuel_consumption(state, test_months)`** — Holt-Winters
-exponential smoothing with a seasonal-naive fallback if `statsmodels`
-fails (happened on one teammate's environment — a real `statsmodels`
-bug, fixed by upgrading to ≥0.15.0, see `requirements.txt`). `run()`
-calls this once per state (all 7), not just one — results land in
-`metrics.json` as `fuel_forecast_NSW`, `fuel_forecast_VIC`, etc., and
-each gets its own chart (`reports/figures/06_forecast_<STATE>.png`).
-
-> Every model result's `_caveat` field is generated at runtime, not
-> hardcoded — check that run's "Using real data" / "Using sample data"
-> log lines for the actual answer on whether real or fixture data
-> produced a given number.
-
-## Data quality validation
-
-`src/analysis/validate.py` — **`validate_emission_factors()`**: fuel ×
-published NGA factor vs. reported emissions. See caveat 4 above for why
-a ~30% gap is expected, not a bug.
-
-(A second check, comparing this data against a National Greenhouse
-Accounts OData API pull, previously existed here. Removed along with
-that data source — see CHANGELOG.md.)
-
-## Dashboard
-
-`dashboard/index.html` — an interactive dashboard, self-contained
-(Plotly bundled locally as `dashboard/plotly.min.js`, no CDN, no
-internet needed, no server — open the file directly in a browser).
-
-- **Historical trends** — Transport-sector emissions, fuel consumption,
-  VKT, registered vehicles, and both per-capita views, switchable via
-  the metric dropdown, by state.
-- **Per-state controls** — show/hide any state, recolor any line via
-  the color swatch. Every panel below (monthly fuel, forecast bars)
-  shares the same state selection and colors.
-- **Monthly fuel consumption** — the real ~190-point-per-state series,
-  not just the annual aggregate.
-- **Models** — regression CV R²/MAE, a forecast-accuracy bar chart per
-  state, and a detail view (train / actual / forecast) for any one
-  state's fuel forecast.
-- **Validation** — the emission-factor check as an interactive scatter.
-
-Every caveat from this README (CV R² near 1 being expected, not a
-predictive triumph; the ~30% validation gap being explained by
-road-fuel-only vs. whole-transport-sector scope) is shown directly in
-the dashboard, not just documented here — a marker or teammate looking
-at the dashboard alone still gets the honest interpretation, not just
-the chart.
+On macOS/Linux, use `.venv/bin/python` in place of `.venv\Scripts\python.exe`. Run commands from the repository root. This checkout already has a local `.venv`; its environment is not committed. See [GUIDE.md](GUIDE.md) for API, troubleshooting and verification.
 
-Regenerate after any pipeline change:
+## What the data means
 
-```bash
-python run_pipeline.py && python scripts/build_dashboard.py
-```
+The retained annual comparison covers seven jurisdictions, FY2010-11 to FY2023-24, with 98 rows. The original combined monthly-sales release retains its 1,344 observations through June 2026. The new market module uses a separately retained July 2026 petroleum extract with **2,702 fuel/state/month observations**, AIP price history from 2004 through 2 October 2026, and national weekly MSO observations through 22 September 2026. Observation cutoffs shown in the app are authoritative after refresh. Capital-city terminal prices are not state-average prices; national stocks are not local-depot holdings.
 
-`dashboard/template.html` is the source (HTML/CSS/JS); `build_dashboard.py`
-reads the real processed data and injects it as embedded JSON — nothing
-is fetched at runtime, so there's no CORS/network dependency when
-someone just opens the file.
+The original six government source files remain intact. Additional source files, hashes, retrieval/check times and status are in `data/market/source_manifest.json`; processed evidence is in `data/market/processed/`. Added price/stock measures supply recurring context. They are not yet fitted as predictors of monthly sales.
 
-## Database (Gold layer)
+| Source | Use and boundary |
+|---|---|
+| [DCCEEW state/territory inventories](https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts/state-and-territory-greenhouse-gas-inventories-data-tables-methodology) | Official financial-year whole-transport inventory; all transport modes |
+| [Australian Petroleum Statistics](https://www.energy.gov.au/energy-data/australian-petroleum-statistics) | Automotive gasoline plus TOTAL diesel sales; includes non-road diesel use |
+| [BITRE Yearbook 2025](https://www.bitre.gov.au/sites/default/files/documents/bitre-yearbook-2025.pdf) | Road VKT Table 4.3 and historical vehicle stock Table 4.6b, originally thousands of vehicles |
+| [ABS population](https://www.abs.gov.au/statistics/people/population/national-state-and-territory-population/latest-release) | Mean of four unique quarterly population observations in each financial year |
+| [DCCEEW quarterly inventories](https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-gas-inventory-quarterly-updates) | National context retained separately; not substituted for state observations |
+| [NGA factors 2025](https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors-2025) | Simple combustion-factor boundary diagnostic; not the state inventory methodology |
 
-`src/db.py` loads every table `clean.py` produces, plus the flattened
-model/validation metrics, into a real DBMS — the "Evaluation" and
-"Deployment" stages of the project lifecycle read from here, not from
-loose CSVs.
+Six physical source files produce seven logical cleaned tables because BITRE supplies VKT and historical fleet stock. The separate downloaded manufacturing-year vehicle CSV is not a historical fleet series and is not used. Actual file names, SHA256 hashes and source boundaries are in `data/bronze/_manifest.csv` and `reports/run_metadata.json`. Original source retrieval dates are unknown; file modification times are not retrieval evidence.
 
-- **Default: SQLite**, `data/gold/warehouse.sqlite` — zero setup, a
-  single file, good enough for this project's size.
-- **Optional: Postgres** (or anything else SQLAlchemy supports) — set
-  `DATABASE_URL` in `.env` and nothing else in the code changes. See
-  `.env.example` for the exact connection string format and a one-line
-  Docker command to run Postgres locally.
+Financial years use their start year (`2023` means FY2023-24). Historical BITRE vehicle stock uses the published calendar-year label associated with the FY starting in that year; this is an approximation, not a financial-year average. The legacy CSV field `fuel_consumption_ml` means petrol plus total diesel **sales** in this project. It must not be quoted as measured road-only consumption.
 
-Tables written: `annual_master`, `annual_master_with_population`,
-`monthly_fuel_series`, `model_metrics` (one row per metric, flattened
-from `metrics.json`, including nested feature importances), and
-`pipeline_runs` (an audit log — one row per pipeline run, with a
-timestamp and row counts, so "did this actually run recently" has an
-answer in the DB itself).
+## Evaluation and limitations
 
-Runs automatically as Step 5 of `python run_pipeline.py`. To run it on
-its own (e.g. after only re-running one stage):
+Fuel forecasts compare seasonal naive with additive Holt-Winters on expanding earlier windows with at least 60 training months and six-month horizons. The retained combined-sales analysis uses six-month steps; FuelScope's separate petrol/diesel series use three-month steps. The selected candidate is then evaluated on the untouched last six observed months and refitted on all available months to produce the next six. Candidate failure is recorded; the simple method is the operational fallback. Model selection does not use the last holdout error.
 
-```bash
-python -m src.db
-```
+Approximate 80/95% bands use horizon-specific absolute historical forecast-error quantiles. Actual final-holdout coverage is disclosed in the interfaces and exports. The bands are not guaranteed probabilities; six holdout months and changing historical conditions cannot establish calibration. A forecast begins after the source cutoff, which may already precede today.
 
-Inspect the database directly:
+Annual linear regression and random forest use expanding **whole-year** folds against previous-year emissions, with per-state errors. Regression receives actual same-year activity covariates, while the previous-year benchmark uses only earlier emissions. This is an association comparison, not an operational emissions forecast. High pooled R² can reflect state size and accounting relationships; it does not establish causality, intervention effects, or inventory reconciliation.
 
-```bash
-sqlite3 data/gold/warehouse.sqlite ".tables"
-sqlite3 data/gold/warehouse.sqlite "SELECT * FROM pipeline_runs;"
-```
+The signed fuel-times-factor diagnostic remains unresolved. It exceeds official transport inventory values in most matched state-years; the old explanation that other transport modes necessarily make it lower was incorrect. See the generated technical results for current discrepancy counts. Use the official inventory for an emissions briefing.
 
-Or open `data/gold/warehouse.sqlite` in a GUI DB browser (DBeaver, or
-the free "DB Browser for SQLite") if a point-and-click view is easier
-than the CLI.
-
-## Deployment
-
-Two live, servable surfaces on top of the DBMS above (in addition to
-the static `dashboard/index.html`, which stays as the no-server option):
-
-**Interactive dashboard (Streamlit):**
-
-```bash
-streamlit run app/streamlit_app.py
-```
-
-Opens at `http://localhost:8501` — historical trends (with state/metric
-selectors), monthly fuel, model results (regression + per-state
-forecast MAPE), and a Monitoring tab showing the latest drift report.
-
-**Scoring API (FastAPI):**
-
-```bash
-uvicorn app.api:app --reload --host 0.0.0.0 --port 8000
-```
-
-Interactive API docs at `http://localhost:8000/docs`. Endpoints:
-`GET /health`, `GET /states`, `GET /metrics`, `GET /monitoring/drift`,
-`POST /predict` (scores the trained regression model on new
-fuel/VKT/vehicle inputs).
-
-Both read from the DBMS (`src/db.py`), so run `python run_pipeline.py`
-at least once first to populate it.
-
-## Monitoring & data drift
-
-`monitoring/monitor.py` — Stage 8 of the project lifecycle. Compares
-the current `annual_master.csv` against a saved reference snapshot,
-column by column, using a Kolmogorov-Smirnov test:
-
-```bash
-python monitoring/monitor.py
-```
-
-First run saves the current data as the baseline
-(`reports/monitoring/reference_annual_master.csv`); every later run
-compares against it and writes `reports/monitoring/drift_report.json`
-(also shown in the Streamlit dashboard's Monitoring tab and via the
-API's `GET /monitoring/drift`). Delete the reference file to
-deliberately re-baseline after a real, expected upstream data change.
-
-A heavier alternative (a full interactive HTML report instead of a
-JSON summary) is Evidently AI — see the comment at the top of
-`monitoring/monitor.py` for the one-line swap if that's preferred.
-
-## Notebook
-
-`src/analysis/analysis.ipynb` — same results as the pipeline, displayed
-inline as well as saved. Calls the exact same functions in
-`clean.py`/`eda.py`/`model.py`/`validate.py` directly, so there's no
-duplicated plotting logic — running it also writes to `reports/`, same
-as `python run_pipeline.py` does. Open it in Jupyter and run all cells.
-
-## Testing
-
-```bash
-pytest tests/ -v
-```
-
-30 tests: 24 for the clean/EDA/model/validate pipeline (master-table
-shape checks — row count > 0, valid state codes, no nulls, positive
-values — rather than exact numbers, since `_locate()` prefers real data
-whenever present and the real row counts differ from the fixture-only
-case), plus 6 for the DBMS layer and drift monitoring
-(`tests/test_db_and_monitoring.py`), run against a temporary SQLite file
-so they never touch `data/gold/warehouse.sqlite`.
-
-## Continuous Integration
-
-`.github/workflows/ci.yml` runs on every push/PR: installs
-`requirements.txt`, runs tests, runs the full pipeline, uploads outputs
-as a build artifact.
-
-## Diagrams
-
-`docs/architecture/architecture_v3.png` and
-`docs/workflow/workflow_v3.png` — v3 reflects the transport-emissions
-rename and the 7-source scope. Earlier versions kept in `docs/` as
-historical record, not deleted. Regenerate with:
-
-```bash
-python scripts/generate_diagrams.py
-```
-
-## Repository layout
-
-```
-src/analysis/
-  clean.py       # load, standardise, merge -> data/processed/
-  eda.py         # figures -> reports/figures/
-  model.py       # train + evaluate -> reports/model_results/
-  validate.py    # data quality check -> reports/validation/
-  analysis.ipynb # interactive notebook, same functions as the pipeline
-src/
-  db.py          # load data/processed/ + metrics -> DBMS (data/gold/)
-app/
-  streamlit_app.py  # interactive dashboard, reads from the DBMS
-  api.py            # FastAPI scoring endpoint + metrics/drift routes
-monitoring/
-  monitor.py     # data-drift check (KS-test) -> reports/monitoring/
-tests/
-  test_clean.py               # 24 tests
-  test_db_and_monitoring.py   # 6 tests (DBMS + monitoring)
-scripts/
-  generate_diagrams.py
-  build_dashboard.py   # -> dashboard/index.html
-dashboard/
-  template.html  # source (HTML/CSS/JS)
-  index.html     # generated -- open this one
-  plotly.min.js  # bundled locally, no CDN dependency
-.github/workflows/
-  ci.yml
-run_pipeline.py
-.env / .env.example  # local config (DB URL, ports) -- .env is git-ignored
-fixtures/        # small synthetic sample data -- fallback only
-data/bronze/     # real downloaded files (human-named folders) + fixture copies
-data/processed/  # cleaned/merged output (generated)
-data/gold/       # DBMS file (SQLite), generated by src/db.py
-reports/         # figures + model results + validation + monitoring (generated)
-docs/            # architecture and workflow diagrams
-```
-
-## Known gaps & next steps
-
-- The four real-data caveats above should be stated explicitly anywhere
-  these results are cited in the report.
-- Individual per-teammate git commits — adopt the branch/PR flow below.
-
-## Git Workflow
-
-**Model: GitHub Flow** — one protected `main` + short-lived feature branches.
-
-```
-main ──●────────●────────●────────●──── (always working, protected)
-        \        \        \        \
-         feature/ feature/ feature/ feature/
-         clean-   eda-     model-   docs-
-         merge    figures  cv       readme
-         ●──●──●  ●──●     ●──●──●  ●──●
-              ↑ PR + review + squash-merge, then delete branch
-```
-
-### Branch naming
-
-`<type>/<epic-slug>-<task-slug>`:
-
-| Type         | When                  | Example                           |
-| ------------ | --------------------- | --------------------------------- |
-| `feature/` | New functionality     | `feature/model-forecast-cv`     |
-| `fix/`     | Bug fix               | `fix/clean-null-state-codes`    |
-| `test/`    | Tests-only change     | `test/model-regression-cv`      |
-| `docs/`    | README/docs only      | `docs/readme-quickstart`        |
-| `chore/`   | Tooling, config, deps | `chore/pin-statsmodels-version` |
-
-### Commit messages — Conventional Commits
-
-```
-feat(clean): parse real petroleum sales sheet, road-fuel products only
-fix(validate): align fuel to financial year before comparing to emissions
-docs(readme): rename project scope to transport emissions
-```
-
-### PR workflow
-
-1. `git checkout main && git pull`
-2. `git checkout -b feature/<epic>-<task>`
-3. Commit in small chunks, not one batch per epic — this matters for
-   Assessment 2 Section 4, where each teammate links their own commits
-4. Push early, open a draft PR for visibility
-5. One approving review before merge
-6. Squash-merge into `main`, delete the branch
-
-> **Note on this repo's history:** commits before this point were made
-> directly to `main` while the project was rebuilt solo after the
-> architecture change (see CHANGELOG.md). Adopt the branch/PR flow above
-> for all work from here forward, so each team member has individual,
-> linkable commit evidence for their contribution page.
+ACT is absent because the selected sales source has no separate ACT series. Per-capita comparisons improve comparability but do not adjust for economic structure, geography, freight demand or policy exposure. The tool supports investigation, not a ranking of policy success.
+
+## Architecture and reproducibility
+
+`run_pipeline.py` performs the existing validated transport pipeline and then builds fuel-specific market outlooks and interfaces from cached real public data. Market refresh is separate and explicit: official-page discovery → download to temporary files → schema/value/date checks → atomic cache replacement → evidence snapshot → dashboard. Invalid or older downloads retain the prior cache. Missing source/product periods, incomplete population quarters and invalid core values are rejected. Database publication is transactional.
+
+The retained transport dashboard and Streamlit/API use the same transport briefing calculation and historical run identity. The database stores structured model results and run metadata, and its readers use one snapshot. SHA256 checks bind processed/model/diagnostic artifacts to a run before loading or building. Run identity includes raw-source hashes and relevant code/dependency-lock content; timestamps describe builds, not source observation dates.
+
+| Output | Location |
+|---|---|
+| Analyst dashboard | `dashboard/index.html` |
+| Interactive app / local API | `app/streamlit_app.py` / `app/api.py` |
+| Processed tables / warehouse | `data/processed/` / `data/gold/warehouse.sqlite` |
+| Model results and predictions | `reports/model_results/metrics.json` |
+| Source/run evidence | `data/bronze/_manifest.csv`, `reports/run_metadata.json` |
+| Structural quality, source age and descriptive KS drift | `reports/monitoring/drift_report.json` |
+| Technical results and sample exports | `reports/evaluation/technical_results.md`, `reports/briefings/` |
+| Current market diagrams | `docs/architecture/architecture_v5.png`, `docs/workflow/workflow_v5.png` |
+| Daily/weekly review evidence | `reports/market_review/snapshot.json`, `reports/market_review/technical_results.md` |
+
+The market snapshot has its own evidence and model identities plus a reference to the original historical run. The current sales backtest compares seasonal naive and Holt-Winters across 41 earlier rolling origins per fuel/state, then evaluates six held-out months. It uses the revised current extract; original historical publication vintages are not reconstructed. Adjacent evaluation windows overlap, and empirical error bands are not calibrated guarantees.
+
+The dependency lock describes the tested environment. CI is correctly located under `.github/workflows/ci.yml`; it rebuilds from tracked government files, tests, regenerates the dashboard and uploads outputs. A local successful run is not evidence of a completed remote CI run. SQLite is the tested default; PostgreSQL/Redshift deployment is not demonstrated here.
+
+## PRT661 Assessment 3
+
+Use the current [19-minute FuelScope runbook](docs/assessment3/fuelscope_video_runbook.md) and [individual evidence guide](docs/assessment3/contribution_evidence_guide.md). The older v2 presentation in `docs/assessment3/presentation/` covers the retained transport analysis and needs revision before a FuelScope recording. The required submission remains a video of at most 20 minutes plus one PDF of exactly two pages per student (font size at least 10). Each student's second page needs one genuine screenshot of the specified Redshift Lab 2 with the lab name, mark and completion date/time, plus reflection.
+
+The team must still establish progress against its actual Assessment 2 submission, conduct genuine benefit evaluation, provide truthful personal evidence and record the presentation. See [the readiness audit](reports/project_audit_2026-10-03.md) for the original defects and rationale for this revision.
