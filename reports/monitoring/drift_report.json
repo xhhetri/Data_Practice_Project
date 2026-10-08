@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-10-08T00:54:01.728605+00:00",
+  "run_id": "712af298d4510368",
+  "quality": {
+    "duplicate_annual_keys": 0,
+    "duplicate_monthly_keys": 0,
+    "missing_months": {
+      "NSW": [],
+      "NT": [],
+      "QLD": [],
+      "SA": [],
+      "TAS": [],
+      "VIC": [],
+      "WA": []
+    },
+    "missing_annual_years": {
+      "NSW": [],
+      "NT": [],
+      "QLD": [],
+      "SA": [],
+      "TAS": [],
+      "VIC": [],
+      "WA": []
+    },
+    "invalid_or_nonpositive_values": 0,
+    "missing_cells": 0,
+    "invalid_or_non_monthstart_dates": 0,
+    "mismatched_state_coverage": [],
+    "unexpected_state_coverage": [],
+    "population_key_mismatch": 0,
+    "invalid_population_rows": 0,
+    "status": "passed",
+    "freshness": {
+      "sales_period_end": "2026-06-30",
+      "sales_age_days": 100,
+      "inventory_period_end": "2024-06-30",
+      "inventory_age_days": 830,
+      "status": "review_source_release_lag",
+      "interpretation": "Age measures the observation cutoff, not the retrieval date. Annual inventories have publication lags. This tool does not provide live observations."
+    }
+  },
+  "columns": {},
+  "interpretation": "Pooled descriptive KS checks; no significant drift does not prove data correctness or model accuracy.",
+  "status": "baseline_created"
+}

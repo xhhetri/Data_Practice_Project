@@ -1,0 +1,104 @@
+{
+  "run_id": "712af298d4510368",
+  "built_at": "2026-10-08T00:54:00.572201+00:00",
+  "code_sha256": "6061bfb27f23abf2cd6a6c8eb4e664c0578f11c059886c97641ee7f21fe2bb96",
+  "git_revision": "631dfbf3a3ae538a7bd0faee2f3d13ad40f3dedc",
+  "sources": [
+    {
+      "source": "abs_population",
+      "status": "real",
+      "path": "data\\bronze\\National, state and territory population\\310104-Population state teritories.xlsx",
+      "is_sample": false,
+      "size_bytes": 91015,
+      "modified_at": "2026-10-08T00:23:26.917846+00:00",
+      "sha256": "8fe4b1a1fc7d228e4e086214c5ecf8d5a8f3f1de803e107cb02bae0e1e5cc34f",
+      "url": "https://www.abs.gov.au/statistics/people/population/national-state-and-territory-population/latest-release",
+      "boundary": "Quarterly estimated resident population; FY quarterly mean",
+      "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence"
+    },
+    {
+      "source": "bitre_yearbook",
+      "status": "real",
+      "path": "data\\bronze\\bitre-yearbook-2025\\4. ROAD.xlsx",
+      "is_sample": false,
+      "size_bytes": 269296,
+      "modified_at": "2026-10-08T00:23:26.933460+00:00",
+      "sha256": "f2359bd8c3175e31e2e4ad47b53b9d0acf315142ab1deb1e4bfb092db0b3ebdc",
+      "url": "https://www.bitre.gov.au/sites/default/files/documents/bitre-yearbook-2025.pdf",
+      "boundary": "Table 4.3 road VKT; Table 4.6b historical calendar-year vehicle stock",
+      "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence"
+    },
+    {
+      "source": "petroleum_statistics",
+      "status": "real",
+      "path": "data\\bronze\\Australian Petroleum statistics consumption cover\\australian_petroleum_statistics_-_data_extract_june_2026.xlsx",
+      "is_sample": false,
+      "size_bytes": 2812645,
+      "modified_at": "2026-10-08T00:23:26.896304+00:00",
+      "sha256": "96eaf6375ff8e4aed88ba98a37fbca999c77c8ab7c4a04a96fad9f10621f6041",
+      "url": "https://www.energy.gov.au/energy-data/australian-petroleum-statistics",
+      "boundary": "Monthly automotive gasoline and TOTAL diesel SALES; not road-only consumption",
+      "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence"
+    },
+    {
+      "source": "quarterly_ghg_update",
+      "status": "real",
+      "path": "data\\bronze\\National Greenhouse Gas Inventory Quarterly Update\\nggi-quarterly-update-december-2025-data-sources.xlsx",
+      "is_sample": false,
+      "size_bytes": 3408265,
+      "modified_at": "2026-10-08T00:23:26.916362+00:00",
+      "sha256": "a7379282533ce0a0db4e94aefbeaa77643374a65250a49dcf4cd4442c72c5f54",
+      "url": "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-gas-inventory-quarterly-updates",
+      "boundary": "National quarterly inventories, retained separately from state analysis",
+      "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence"
+    },
+    {
+      "source": "state_territory_ghg",
+      "status": "real",
+      "path": "data\\bronze\\State & Territory Inventories 2024 - Emission Data Tables\\state-territory-inventories-2024-emission-data-tables.xlsx",
+      "is_sample": false,
+      "size_bytes": 1544171,
+      "modified_at": "2026-10-08T00:23:26.930029+00:00",
+      "sha256": "0323c34b1411f998560f33258e7c1fb3e97ed4b859e5310e9ee8cacbedd0b8fa",
+      "url": "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts/state-and-territory-greenhouse-gas-inventories-data-tables-methodology",
+      "boundary": "Financial-year whole-transport inventory; all transport modes",
+      "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence"
+    },
+    {
+      "source": "nga_factors_2025",
+      "status": "real",
+      "path": "data\\bronze\\Australian National Greenhouse Accounts Factors\\national-greenhouse-account-factors-2025.xlsx",
+      "is_sample": false,
+      "size_bytes": 93770,
+      "modified_at": "2026-10-08T00:23:26.875876+00:00",
+      "sha256": "ef398719acf8e22136674573cfed9550bdb3af4303cee36fe8b60991a5aec16d",
+      "url": "https://www.dcceew.gov.au/climate-change/publications/national-greenhouse-accounts-factors-2025",
+      "boundary": "Table 9 car/light-commercial combustion factors; used only as a boundary diagnostic",
+      "retrieval_date": "Not recorded in original download; file modification time is not retrieval evidence"
+    }
+  ],
+  "coverage": {
+    "annual_start": 2010,
+    "annual_end": 2023,
+    "sales_start": "2010-07-01",
+    "sales_end": "2026-06-01",
+    "annual_rows": 98,
+    "monthly_rows": 1344
+  },
+  "packages": {
+    "pandas": "3.0.6",
+    "numpy": "2.5.3",
+    "scikit-learn": "1.9.1",
+    "statsmodels": "0.15.0",
+    "streamlit": "1.65.0"
+  },
+  "outputs": {
+    "data/processed/annual_master.csv": "9de2f6a44ee5da9f8bebbcb6c7c33f797d133f1f1d65f5f044d0825d95a3dd2f",
+    "data/processed/annual_master_with_population.csv": "58b4e66e547ebfd4b130795a4ac260f272fc551a6f66438830d7719a40a0fd39",
+    "data/processed/monthly_fuel_series.csv": "376a0b3870cea5c04f6d718db6e5f1d00c7a6c85c8e256e675a83df645e84283",
+    "data/processed/nsw_traffic_hourly.csv": "726c59d5a59922bbc28adaee408e3c140958b88ec3fcf380e0a9f1f7cf64cd0c",
+    "reports/model_results/emissions_regression.pkl": "b98b18424c0336f444928de7637a7edb0b1318a0f73cc0111afc950f8580883a",
+    "reports/model_results/metrics.json": "9eaab8c186541fd2ceac5c3c18f15305b05a1fd1bccb0f46755045612f05437a",
+    "reports/validation/emission_factor_check.csv": "04272f3d6882baaab56afd85a056366ac0c2108e59e55672dcffe7187d2642c1"
+  }
+}

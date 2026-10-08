@@ -260,30 +260,62 @@ def load_state_territory_ghg() -> pd.DataFrame:
     return df
 
 
+def _load_bitre_vehicle_stock(path: Path) -> pd.DataFrame:
+    """BITRE Yearbook Table 4.6b: registered vehicle stock by state and
+    calendar year, published in thousands. Converted to vehicle counts."""
+    raw = pd.read_excel(path, sheet_name="Table 4.6a-c", header=None)
+    titles = raw[0].astype(str)
+    start = titles[titles.str.startswith("Table 4.6b")].index
+    if start.empty:
+        raise ValueError(f"Table 4.6b not found in {path}")
+    header_row = start[0] + 2
+    states = raw.iloc[header_row]
+    col_map = {c: states[c] for c in raw.columns if states[c] in VALID_STATES}
+
+    # Year rows run from two below the header until the first "Notes" row;
+    # stopping there keeps Table 4.6c (further down the sheet) out.
+    block = raw.iloc[header_row + 2:]
+    years = pd.to_numeric(block[0], errors="coerce")
+    block = block.iloc[: int(years.isna().argmax()) if years.isna().any() else len(block)]
+
+    records = []
+    for col, state in col_map.items():
+        part = pd.DataFrame({
+            "state": state,
+            "year": block[0].astype(int),
+            "count": pd.to_numeric(block[col], errors="coerce") * 1000,
+        })
+        records.append(part)
+    df = pd.concat(records, ignore_index=True).dropna(subset=["count"])
+    df["count"] = df["count"].round().astype("int64")
+    df["vehicle_type"] = "All vehicles"
+    return df[["state", "vehicle_type", "year", "count"]]
+
+
 def load_vehicle_registrations() -> pd.DataFrame:
     """
-    Real: current registered-fleet CSV, broken down by year of
-    MANUFACTURE, not year of registration -- this is a single snapshot
-    of today's fleet composition, not a historical annual time series.
-    (Filename suffix 'yom' = year of manufacture, confirming this.)
+    Historical registered-vehicle stock by state and calendar year.
 
-    Returns state, vehicle_type, year_of_manufacture, count -- deliberately
-    NOT renamed to a 'year' column, so it can't be silently misused as if
-    it were a real per-year time series. See gold.build_annual_master() for
-    how this gets folded in (as a constant current-fleet-size per state,
-    not a genuine year-varying feature).
-    Fixture fallback: flat state,vehicle_type,year,count CSV (the fixture
-    *is* shaped as a real annual time series -- a simplification the real
-    data doesn't support).
+    Real: BITRE Yearbook Table 4.6b (same workbook as Table 4.3 VKT),
+    converted from thousands to vehicle counts. Years the yearbook leaves
+    blank (e.g. 1983-84) are dropped, not interpolated.
+
+    The RVA 'yom' CSV under data/bronze is NOT used: it is a single current
+    fleet snapshot broken down by year of MANUFACTURE, so it cannot supply
+    year-varying stock (gold.build_annual_master() rejects it).
+    Fixture fallback: flat state,vehicle_type,year,count CSV.
     """
-    path = _locate("vehicle_registrations")
-    is_real = "year_of_manufacture" in _read_tabular(path, nrows=0).columns
-
-    if is_real:
-        df = _read_tabular(path)
-        df = df.rename(columns={"state_abb": "state", "no_vehicles": "count"})
+    bitre = _locate("bitre_yearbook")
+    if bitre.suffix.lower() in (".xlsx", ".xls") and "Table 4.6a-c" in pd.ExcelFile(bitre).sheet_names:
+        df = _load_bitre_vehicle_stock(bitre)
     else:
+        path = _locate("vehicle_registrations")
         df = _read_tabular(path)
+        if "year" not in df.columns:
+            raise ValueError(
+                f"{path} has no 'year' column; historical stock requires "
+                "BITRE Yearbook Table 4.6b"
+            )
 
     df = _standardise_state(df)
     df["count"] = pd.to_numeric(df["count"], errors="coerce")
